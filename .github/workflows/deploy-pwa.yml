@@ -37,7 +37,7 @@ jobs:
         working-directory: pwa
         run: npm run build
         env:
-          VITE_BASE_PATH: /music_project/
+          VITE_BASE_PATH: /project_rc/
 
       - uses: actions/configure-pages@v5
 

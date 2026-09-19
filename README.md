@@ -96,17 +96,12 @@ Já existe um workflow (`.github/workflows/deploy-pwa.yml`) que builda e
 publica `pwa/` sempre que algo muda nessa pasta (ou pode ser disparado
 manualmente pela aba **Actions** do repositório, com "Run workflow").
 
-**Passo único de configuração (feito pelo dono do repositório, uma vez só):**
-em `Settings → Pages`, em "Build and deployment", mudar **Source** para
-**GitHub Actions**. Depois disso, todo push em `pwa/` publica sozinho em:
+Já configurado (repositório público + `Settings → Pages → Source: GitHub
+Actions`). Todo push em `pwa/` publica sozinho em:
 
 ```
-https://ptk170623.github.io/music_project/
+https://ptk170623.github.io/project_rc/
 ```
-
-Se esse passo ainda não tiver sido feito, o workflow falha com uma mensagem
-indicando que o Pages não está habilitado — é só fazer essa troca no
-Settings e rodar o workflow de novo (push ou "Run workflow").
 
 Depois de publicado, abra essa URL no celular e use "Adicionar à tela de
 início" (ou o botão **Instalar app** que aparece no topo, no Chrome
