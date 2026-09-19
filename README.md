@@ -4,8 +4,14 @@ App pessoal para registrar impressões sobre músicas ao ouvi-las ativamente:
 bandas → álbuns → músicas, com classificação (C/B/A/S) e "características"
 (observações rápidas) que podem ter uma classificação própria.
 
-- **Backend**: FastAPI + SQLite (SQLAlchemy), servido localmente via `uvicorn`.
-- **Frontend**: React (Vite).
+Existem duas versões no repositório:
+
+- **`backend/` + `frontend/`** — versão "cliente-servidor": FastAPI + SQLite
+  rodando no computador, acessível também pelo celular na mesma rede Wi-Fi.
+  Documentada abaixo.
+- **`pwa/`** — versão 100% offline: React + IndexedDB, sem backend nenhum,
+  instalável como app no celular. Documentada em [Versão PWA
+  offline](#versão-pwa-offline-pasta-pwa).
 
 ## Rodando localmente
 
@@ -59,6 +65,67 @@ está rodando (não funciona pela internet, só na rede local).
 
 Dica: no navegador do celular (Chrome/Safari), use "Adicionar à tela de
 início" para abrir o app como se fosse um atalho, sem a barra de endereço.
+
+## Versão PWA offline (pasta `pwa/`)
+
+Essa versão não usa backend nem SQLite: todos os dados ficam salvos direto
+no navegador (IndexedDB) e o app funciona instalado como um aplicativo,
+sem precisar do computador ligado nem de internet depois de instalado.
+
+### Rodando/testando localmente
+
+```bash
+cd pwa
+npm install
+npm run dev
+```
+
+Abre em `http://localhost:5174`. Nesse modo de desenvolvimento o app já
+funciona e salva os dados no navegador, mas o "instalar app" e o
+funcionamento 100% offline só ficam completos numa build de produção
+(`npm run build` + `npm run preview`), que é como o service worker
+realmente entra em ação.
+
+### Colocando no celular pra valer (sem depender do computador)
+
+O pulo do gato aqui é que essa versão é só arquivos estáticos (HTML/JS/CSS) —
+não tem nada rodando no servidor, então dá pra hospedar de graça num serviço
+de hospedagem estática e abrir de qualquer lugar, sem depender do
+computador estar ligado:
+
+1. Gere a build de produção:
+   ```bash
+   cd pwa
+   npm run build
+   ```
+   Isso cria a pasta `pwa/dist/` com todos os arquivos prontos.
+2. Suba essa pasta em um serviço de hospedagem estática gratuito, por
+   exemplo:
+   - **Cloudflare Pages**, **Netlify** ou **Vercel** — todos têm CLI que
+     publica uma pasta com um comando (`netlify deploy`, `vercel deploy`
+     etc.) ou aceitam arrastar a pasta `dist/` direto no painel web.
+   - **GitHub Pages** — publica o conteúdo de `pwa/dist/` numa branch
+     `gh-pages` ou via GitHub Actions.
+   Qualquer uma dessas opções gera uma URL `https://...` pública e
+   permanente, sem custo, e sem precisar do computador depois de publicado.
+3. Abra essa URL no celular e use "Adicionar à tela de início" (ou o botão
+   **Instalar app** que aparece no topo, no Chrome Android) — a partir daí
+   o app vira um ícone próprio, funciona offline e os dados ficam salvos
+   no armazenamento do celular.
+
+Importante: como service worker e "instalar app" exigem conexão segura
+(HTTPS), abrir direto pelo IP local (`http://192.168...`) funciona para
+usar o app, mas o navegador pode não oferecer a instalação completa nesse
+modo — daí a recomendação de publicar num host com HTTPS para o uso "pra
+valer" no celular.
+
+### Backup dos dados
+
+Como os dados vivem só no navegador daquele aparelho (se limpar os dados do
+site, desinstalar o app ou trocar de celular, eles somem), o app tem os
+botões **Exportar backup** / **Importar backup** no topo da tela, que
+salvam/restauram tudo num arquivo `.json`. Vale o hábito de exportar de vez
+em quando.
 
 ## Funcionalidades
 
