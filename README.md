@@ -86,32 +86,37 @@ funcionamento 100% offline só ficam completos numa build de produção
 (`npm run build` + `npm run preview`), que é como o service worker
 realmente entra em ação.
 
-### Colocando no celular pra valer (sem depender do computador)
+### Colocando no celular pra valer (sem depender do computador) — já automatizado
 
-O pulo do gato aqui é que essa versão é só arquivos estáticos (HTML/JS/CSS) —
-não tem nada rodando no servidor, então dá pra hospedar de graça num serviço
-de hospedagem estática e abrir de qualquer lugar, sem depender do
-computador estar ligado:
+Essa versão é só arquivos estáticos (HTML/JS/CSS), sem nada rodando em
+servidor, então ela é publicada automaticamente no **GitHub Pages** — de
+graça, com HTTPS, e sem precisar do computador ligado depois disso.
 
-1. Gere a build de produção:
-   ```bash
-   cd pwa
-   npm run build
-   ```
-   Isso cria a pasta `pwa/dist/` com todos os arquivos prontos.
-2. Suba essa pasta em um serviço de hospedagem estática gratuito, por
-   exemplo:
-   - **Cloudflare Pages**, **Netlify** ou **Vercel** — todos têm CLI que
-     publica uma pasta com um comando (`netlify deploy`, `vercel deploy`
-     etc.) ou aceitam arrastar a pasta `dist/` direto no painel web.
-   - **GitHub Pages** — publica o conteúdo de `pwa/dist/` numa branch
-     `gh-pages` ou via GitHub Actions.
-   Qualquer uma dessas opções gera uma URL `https://...` pública e
-   permanente, sem custo, e sem precisar do computador depois de publicado.
-3. Abra essa URL no celular e use "Adicionar à tela de início" (ou o botão
-   **Instalar app** que aparece no topo, no Chrome Android) — a partir daí
-   o app vira um ícone próprio, funciona offline e os dados ficam salvos
-   no armazenamento do celular.
+Já existe um workflow (`.github/workflows/deploy-pwa.yml`) que builda e
+publica `pwa/` sempre que algo muda nessa pasta (ou pode ser disparado
+manualmente pela aba **Actions** do repositório, com "Run workflow").
+
+**Passo único de configuração (feito pelo dono do repositório, uma vez só):**
+em `Settings → Pages`, em "Build and deployment", mudar **Source** para
+**GitHub Actions**. Depois disso, todo push em `pwa/` publica sozinho em:
+
+```
+https://ptk170623.github.io/music_project/
+```
+
+Se esse passo ainda não tiver sido feito, o workflow falha com uma mensagem
+indicando que o Pages não está habilitado — é só fazer essa troca no
+Settings e rodar o workflow de novo (push ou "Run workflow").
+
+Depois de publicado, abra essa URL no celular e use "Adicionar à tela de
+início" (ou o botão **Instalar app** que aparece no topo, no Chrome
+Android) — a partir daí o app vira um ícone próprio, funciona offline e os
+dados ficam salvos no armazenamento do celular.
+
+Prefere outro host (Cloudflare Pages, Netlify, Vercel)? Funciona do mesmo
+jeito: gere a build com `npm run build` dentro de `pwa/` e publique a pasta
+`pwa/dist/` — só ajuste `VITE_BASE_PATH` no `vite.config.js` se o app não
+for servido na raiz do domínio.
 
 Importante: como service worker e "instalar app" exigem conexão segura
 (HTTPS), abrir direto pelo IP local (`http://192.168...`) funciona para
