@@ -8,7 +8,7 @@ export default function App() {
     <div className="app-shell">
       <header className="top-bar">
         <Link to="/" className="brand">
-          🎧 Diário Musical
+          🎧 Music Journal
         </Link>
       </header>
       <main className="content">

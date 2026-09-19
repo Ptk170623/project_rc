@@ -16,10 +16,10 @@ export default function BandsPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>Bandas</h1>
+        <h1>Bands</h1>
         <InlineAddForm
-          label="Adicionar banda"
-          placeholder="Nome da banda"
+          label="Add band"
+          placeholder="Band name"
           onSubmit={async (name) => {
             await api.createBand(name);
             load();
@@ -28,9 +28,9 @@ export default function BandsPage() {
       </div>
 
       {loading ? (
-        <p className="empty-hint">Carregando…</p>
+        <p className="empty-hint">Loading…</p>
       ) : bands.length === 0 ? (
-        <p className="empty-hint">Nenhuma banda cadastrada ainda.</p>
+        <p className="empty-hint">No bands added yet.</p>
       ) : (
         <ul className="card-list">
           {bands.map((band) => (

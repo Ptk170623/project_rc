@@ -15,10 +15,10 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icons/apple-touch-icon.png"],
       manifest: {
-        name: "Diário Musical",
-        short_name: "Diário Musical",
+        name: "Music Journal",
+        short_name: "Music Journal",
         description:
-          "Registro pessoal de impressões sobre músicas, 100% offline.",
+          "A personal, 100% offline log of your impressions on songs.",
         theme_color: "#14161b",
         background_color: "#14161b",
         display: "standalone",

@@ -506,6 +506,9 @@ body {
   display: flex;
   gap: 6px;
 }
+.reset-defaults-link {
+  margin-top: 10px;
+}
 
 /* Mobile */
 @media (max-width: 640px) {

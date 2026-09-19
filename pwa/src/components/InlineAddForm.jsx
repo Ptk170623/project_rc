@@ -39,7 +39,7 @@ export default function InlineAddForm({ label, placeholder, onSubmit }) {
         }}
       />
       <button className="btn btn-primary" type="submit" disabled={busy}>
-        Adicionar
+        Add
       </button>
       <button
         className="btn btn-ghost"
@@ -49,7 +49,7 @@ export default function InlineAddForm({ label, placeholder, onSubmit }) {
           setValue("");
         }}
       >
-        Cancelar
+        Cancel
       </button>
     </form>
   );

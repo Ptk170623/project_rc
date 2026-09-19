@@ -33,7 +33,7 @@ export default function InstallButton() {
 
   return (
     <button className="btn btn-small btn-secondary" onClick={install}>
-      Instalar app
+      Install app
     </button>
   );
 }

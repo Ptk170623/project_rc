@@ -14,7 +14,7 @@ export default function BackupMenu() {
     const a = document.createElement("a");
     const date = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = `diario-musical-backup-${date}.json`;
+    a.download = `music-journal-backup-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -25,7 +25,7 @@ export default function BackupMenu() {
     if (!file) return;
 
     const ok = window.confirm(
-      "Importar este arquivo vai substituir todos os dados salvos neste dispositivo. Continuar?"
+      "Importing this file will replace all data saved on this device. Continue?"
     );
     if (!ok) return;
 
@@ -36,7 +36,7 @@ export default function BackupMenu() {
       await api.importAll(data);
       window.location.href = "/";
     } catch (err) {
-      window.alert("Não foi possível importar o arquivo: " + err.message);
+      window.alert("Couldn't import the file: " + err.message);
     } finally {
       setBusy(false);
     }
@@ -45,14 +45,14 @@ export default function BackupMenu() {
   return (
     <div className="backup-menu">
       <button className="btn btn-small btn-ghost" onClick={exportData} disabled={busy}>
-        Exportar backup
+        Export backup
       </button>
       <button
         className="btn btn-small btn-ghost"
         onClick={() => fileInputRef.current?.click()}
         disabled={busy}
       >
-        {busy ? "Importando…" : "Importar backup"}
+        {busy ? "Importing…" : "Import backup"}
       </button>
       <input
         ref={fileInputRef}

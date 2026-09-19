@@ -5,8 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    // Escuta em todas as interfaces de rede, permitindo acesso via IP local
-    // (ex.: celular na mesma Wi-Fi), não só em localhost.
+    // Listen on all network interfaces, not just localhost, so it's
+    // reachable via LAN IP (e.g. a phone on the same Wi-Fi).
     host: true,
   },
 });

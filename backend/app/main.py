@@ -6,26 +6,18 @@ from .database import Base, SessionLocal, engine
 from .routers import albums, bands, options, songs, traits
 
 DEFAULT_TRAIT_OPTIONS = [
-    "Baixo marcante",
-    "Bateria groove",
-    "Riff de guitarra",
-    "Vocal potente",
-    "Harmonia vocal",
-    "Letra profunda",
-    "Produção limpa",
-    "Mudança de andamento",
-    "Solo instrumental",
-    "Atmosfera",
+    "Vocal",
+    "Vocals",
+    "Vocal with backing vocals",
+    "Guitar",
+    "Bass",
+    "Drums",
+    "Rhythm guitar",
+    "Lead guitar",
+    "Guitar solo",
 ]
 
-DEFAULT_SUBTRAIT_OPTIONS = [
-    "Muito bom",
-    "Surpreendente",
-    "Sutil",
-    "Repetitivo",
-    "Marcante",
-    "Fora do padrão da banda",
-]
+DEFAULT_SUBTRAIT_OPTIONS = ["Great", "Strong", "Low"]
 
 
 def _seed_default_options() -> None:
@@ -55,9 +47,8 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title="Music Journal API")
 
-    # App de uso pessoal/local: libera qualquer origem (localhost ou IP da
-    # rede local, para acesso via celular) já que não há autenticação por
-    # cookies envolvida.
+    # Personal/local-use app: allow any origin (localhost or a LAN IP, for
+    # access from a phone) since there's no cookie-based auth involved.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],

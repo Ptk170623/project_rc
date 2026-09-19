@@ -1,6 +1,6 @@
-// Sem VITE_API_BASE definido, assume a API na mesma máquina que serviu a
-// página (funciona tanto em localhost quanto ao acessar pelo IP da rede,
-// como no celular), na porta padrão do uvicorn.
+// Without VITE_API_BASE set, assume the API lives on the same machine that
+// served this page (works both on localhost and when accessed via LAN IP,
+// e.g. from a phone), on uvicorn's default port.
 const API_BASE =
   import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000`;
 

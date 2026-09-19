@@ -15,19 +15,19 @@ export default function BandPage() {
     load();
   }, [bandId]);
 
-  if (loading) return <p className="empty-hint">Carregando…</p>;
-  if (!band) return <p className="empty-hint">Banda não encontrada.</p>;
+  if (loading) return <p className="empty-hint">Loading…</p>;
+  if (!band) return <p className="empty-hint">Band not found.</p>;
 
   return (
     <div>
       <Link to="/" className="breadcrumb">
-        ← Bandas
+        ← Bands
       </Link>
       <div className="page-header">
         <h1>{band.name}</h1>
         <InlineAddForm
-          label="Adicionar álbum"
-          placeholder="Nome do álbum"
+          label="Add album"
+          placeholder="Album name"
           onSubmit={async (name) => {
             await api.createAlbum(band.id, name);
             load();
@@ -36,7 +36,7 @@ export default function BandPage() {
       </div>
 
       {band.albums.length === 0 ? (
-        <p className="empty-hint">Nenhum álbum cadastrado ainda.</p>
+        <p className="empty-hint">No albums added yet.</p>
       ) : (
         <ul className="card-list">
           {band.albums.map((album) => (

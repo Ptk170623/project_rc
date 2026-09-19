@@ -31,8 +31,8 @@ export default function AlbumPage() {
     }
   };
 
-  if (loading) return <p className="empty-hint">Carregando…</p>;
-  if (!album) return <p className="empty-hint">Álbum não encontrado.</p>;
+  if (loading) return <p className="empty-hint">Loading…</p>;
+  if (!album) return <p className="empty-hint">Album not found.</p>;
 
   return (
     <div>
@@ -43,8 +43,8 @@ export default function AlbumPage() {
         <h1>{album.name}</h1>
         <div className="page-header-actions">
           <InlineAddForm
-            label="Adicionar música"
-            placeholder="Nome da música"
+            label="Add song"
+            placeholder="Song name"
             onSubmit={async (name) => {
               await api.createSong(albumId, name);
               load();
@@ -55,7 +55,7 @@ export default function AlbumPage() {
             disabled={bulkBusy}
             onClick={() => fileInputRef.current?.click()}
           >
-            {bulkBusy ? "Importando…" : "Importar lista (.txt)"}
+            {bulkBusy ? "Importing…" : "Import list (.txt)"}
           </button>
           <input
             ref={fileInputRef}
@@ -68,7 +68,7 @@ export default function AlbumPage() {
       </div>
 
       {album.songs.length === 0 ? (
-        <p className="empty-hint">Nenhuma música cadastrada ainda.</p>
+        <p className="empty-hint">No songs added yet.</p>
       ) : (
         <div className="song-list">
           {album.songs.map((song) => (

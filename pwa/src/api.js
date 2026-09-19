@@ -8,28 +8,7 @@ import {
   reqPut,
   withStore,
 } from "./db.js";
-
-const DEFAULT_TRAIT_OPTIONS = [
-  "Baixo marcante",
-  "Bateria groove",
-  "Riff de guitarra",
-  "Vocal potente",
-  "Harmonia vocal",
-  "Letra profunda",
-  "Produção limpa",
-  "Mudança de andamento",
-  "Solo instrumental",
-  "Atmosfera",
-];
-
-const DEFAULT_SUBTRAIT_OPTIONS = [
-  "Muito bom",
-  "Surpreendente",
-  "Sutil",
-  "Repetitivo",
-  "Marcante",
-  "Fora do padrão da banda",
-];
+import { DEFAULT_TRAIT_OPTIONS, DEFAULT_SUBTRAIT_OPTIONS } from "./defaultOptions.js";
 
 async function seedDefaultOptions() {
   await withStore("options", "readwrite", async (store) => {
@@ -49,7 +28,7 @@ async function seedDefaultOptions() {
 let seeded = getDB().then(seedDefaultOptions);
 
 function notFound(what) {
-  const err = new Error(`${what} não encontrado(a)`);
+  const err = new Error(`${what} not found`);
   err.status = 404;
   return err;
 }
@@ -78,7 +57,7 @@ export const api = {
   getBand: (bandId) =>
     withStore(["bands", "albums"], "readonly", async ({ bands, albums }) => {
       const band = await reqGet(bands, Number(bandId));
-      if (!band) throw notFound("Banda");
+      if (!band) throw notFound("Band");
       const albumList = await reqIndexAll(albums, "band_id", Number(bandId));
       albumList.sort((a, b) => a.id - b.id);
       return { ...band, albums: albumList };
@@ -118,7 +97,7 @@ export const api = {
       "readonly",
       async ({ albums, bands, songs, traits }) => {
         const album = await reqGet(albums, Number(albumId));
-        if (!album) throw notFound("Álbum");
+        if (!album) throw notFound("Album");
         const band = await reqGet(bands, album.band_id);
         const songList = await reqIndexAll(songs, "album_id", Number(albumId));
         songList.sort((a, b) => a.position - b.position);
@@ -195,7 +174,7 @@ export const api = {
   updateSong: (songId, payload) =>
     withStore(["songs", "traits"], "readwrite", async ({ songs, traits }) => {
       const song = await reqGet(songs, Number(songId));
-      if (!song) throw notFound("Música");
+      if (!song) throw notFound("Song");
       if (payload.name != null) song.name = payload.name;
       if (payload.clear_rating) song.rating = null;
       else if (payload.rating != null) song.rating = payload.rating;
@@ -230,7 +209,7 @@ export const api = {
   updateTrait: (traitId, payload) =>
     withStore("traits", "readwrite", async (store) => {
       const trait = await reqGet(store, Number(traitId));
-      if (!trait) throw notFound("Característica");
+      if (!trait) throw notFound("Trait");
       if (payload.text != null) trait.text = payload.text;
       if (payload.clear_sub_text) trait.sub_text = null;
       else if (payload.sub_text != null) trait.sub_text = payload.sub_text;
@@ -259,7 +238,7 @@ export const api = {
   updateOption: (id, label) =>
     withStore("options", "readwrite", async (store) => {
       const option = await reqGet(store, Number(id));
-      if (!option) throw notFound("Opção");
+      if (!option) throw notFound("Option");
       option.label = label;
       await reqPut(store, option);
       return option;

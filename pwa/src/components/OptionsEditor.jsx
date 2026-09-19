@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
+import { DEFAULTS_BY_KIND } from "../defaultOptions.js";
 
 export default function OptionsEditor({ kind, title, onClose }) {
   const [options, setOptions] = useState([]);
   const [newLabel, setNewLabel] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingValue, setEditingValue] = useState("");
+  const [resetting, setResetting] = useState(false);
 
   const load = () => api.listOptions(kind).then(setOptions);
 
@@ -36,13 +38,30 @@ export default function OptionsEditor({ kind, title, onClose }) {
     load();
   };
 
+  const resetToDefaults = async () => {
+    const ok = window.confirm(
+      "Reset this list to the built-in defaults? Options you added or edited here will be removed. Traits already added to songs are not affected."
+    );
+    if (!ok) return;
+    setResetting(true);
+    try {
+      for (const opt of options) await api.deleteOption(opt.id);
+      for (const label of DEFAULTS_BY_KIND[kind] || []) {
+        await api.createOption(kind, label);
+      }
+      await load();
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{title}</h3>
           <button className="btn btn-ghost" onClick={onClose}>
-            Fechar
+            Close
           </button>
         </div>
         <ul className="options-list">
@@ -57,7 +76,7 @@ export default function OptionsEditor({ kind, title, onClose }) {
                     onKeyDown={(e) => e.key === "Enter" && saveEdit(opt.id)}
                   />
                   <button className="btn btn-small" onClick={() => saveEdit(opt.id)}>
-                    Salvar
+                    Save
                   </button>
                 </>
               ) : (
@@ -71,31 +90,38 @@ export default function OptionsEditor({ kind, title, onClose }) {
                         setEditingValue(opt.label);
                       }}
                     >
-                      Editar
+                      Edit
                     </button>
                     <button
                       className="btn btn-small btn-danger"
                       onClick={() => remove(opt.id)}
                     >
-                      Remover
+                      Remove
                     </button>
                   </div>
                 </>
               )}
             </li>
           ))}
-          {options.length === 0 && <li className="empty-hint">Nenhuma opção ainda.</li>}
+          {options.length === 0 && <li className="empty-hint">No options yet.</li>}
         </ul>
         <form className="inline-add-form" onSubmit={addOption}>
           <input
-            placeholder="Nova opção"
+            placeholder="New option"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
           />
           <button className="btn btn-primary" type="submit">
-            Adicionar
+            Add
           </button>
         </form>
+        <button
+          className="btn btn-ghost btn-small reset-defaults-link"
+          onClick={resetToDefaults}
+          disabled={resetting}
+        >
+          {resetting ? "Resetting…" : "Reset to defaults"}
+        </button>
       </div>
     </div>
   );

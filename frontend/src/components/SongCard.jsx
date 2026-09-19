@@ -15,7 +15,7 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
 
   const addTrait = async (text) => {
     await api.addTrait(song.id, text);
-    setShowAddTrait(false);
+    // Keep the picker open so several traits can be added in a row.
     onRefresh();
   };
 
@@ -56,7 +56,7 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
       {expanded && (
         <div className="song-dropdown" onClick={(e) => e.stopPropagation()}>
           <div className="song-dropdown-header">
-            <span>Características</span>
+            <span>Traits</span>
             <button
               className="btn btn-small btn-primary"
               onClick={() => setShowAddTrait((v) => !v)}
@@ -68,7 +68,7 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
           {showAddTrait && (
             <QuickPicker
               kind="trait"
-              title="Característica"
+              title="Trait"
               onPick={addTrait}
               onClose={() => setShowAddTrait(false)}
             />
@@ -93,13 +93,13 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
                     className="btn btn-small btn-danger"
                     onClick={(e) => removeTrait(t.id, e)}
                   >
-                    Remover
+                    Remove
                   </button>
                 </div>
                 {subtraitTargetId === t.id && (
                   <QuickPicker
                     kind="subtrait"
-                    title="Classificação"
+                    title="Classification"
                     onPick={(text) => addSubtrait(t.id, text)}
                     onClose={() => setSubtraitTargetId(null)}
                   />
@@ -107,7 +107,7 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
               </li>
             ))}
             {song.traits.length === 0 && (
-              <li className="empty-hint">Nenhuma característica ainda.</li>
+              <li className="empty-hint">No traits yet.</li>
             )}
           </ul>
         </div>

@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import OptionsEditor from "./OptionsEditor.jsx";
 
+const EDITOR_TITLE = {
+  trait: "Trait options",
+  subtrait: "Classification options",
+};
+
 export default function QuickPicker({ kind, title, onPick, onClose }) {
   const [options, setOptions] = useState([]);
   const [customValue, setCustomValue] = useState("");
@@ -45,29 +50,29 @@ export default function QuickPicker({ kind, title, onPick, onClose }) {
           </button>
         ))}
         {options.length === 0 && (
-          <span className="empty-hint">Sem opções rápidas ainda.</span>
+          <span className="empty-hint">No quick options yet.</span>
         )}
       </div>
       <form className="inline-add-form" onSubmit={submitCustom}>
         <input
-          placeholder="Escrever algo novo…"
+          placeholder="Write something new…"
           value={customValue}
           onChange={(e) => setCustomValue(e.target.value)}
         />
         <button className="btn btn-primary btn-small" type="submit">
-          Adicionar
+          Add
         </button>
       </form>
       <button
         className="btn btn-ghost btn-small edit-options-link"
         onClick={() => setShowEditor(true)}
       >
-        Editar lista de opções
+        Edit options list
       </button>
       {showEditor && (
         <OptionsEditor
           kind={kind}
-          title={title === "Característica" ? "Opções de característica" : "Opções de classificação"}
+          title={EDITOR_TITLE[kind]}
           onClose={() => {
             setShowEditor(false);
             load();
