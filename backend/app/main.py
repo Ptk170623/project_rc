@@ -55,13 +55,13 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title="Music Journal API")
 
+    # App de uso pessoal/local: libera qualquer origem (localhost ou IP da
+    # rede local, para acesso via celular) já que não há autenticação por
+    # cookies envolvida.
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-        ],
-        allow_credentials=True,
+        allow_origins=["*"],
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )

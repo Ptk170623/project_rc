@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+// Sem VITE_API_BASE definido, assume a API na mesma máquina que serviu a
+// página (funciona tanto em localhost quanto ao acessar pelo IP da rede,
+// como no celular), na porta padrão do uvicorn.
+const API_BASE =
+  import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000`;
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
