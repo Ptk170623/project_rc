@@ -15,6 +15,9 @@ export default function BandsPage() {
 
   return (
     <div>
+      <Link to="/" className="breadcrumb">
+        ← Sections
+      </Link>
       <div className="page-header">
         <h1>Bands</h1>
         <InlineAddForm

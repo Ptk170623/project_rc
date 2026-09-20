@@ -5,6 +5,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 Rating = Literal["C", "B", "G", "A", "S"]
 OptionKind = Literal["trait", "subtrait"]
+RotationDay = Literal[
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "others"
+]
 
 
 # ---------- SongTrait ----------
@@ -107,3 +110,19 @@ class QuickOptionRead(BaseModel):
     kind: str
     label: str
     position: int
+
+
+# ---------- RotationSlot ----------
+class RotationSlotCreate(BaseModel):
+    day: RotationDay
+    band_id: int
+
+
+class RotationSlotRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    day: str
+    band_id: int
+    position: int
+    band: BandRead

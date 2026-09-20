@@ -1,9 +1,14 @@
 # Music Journal
 
-A personal app for logging impressions on songs while actively listening:
-bands → albums → songs, with a rating (Meh / Good / Great / Amazing /
-Legendary) and "traits" (quick notes) that can each carry their own
-classification.
+A personal app for actively listening to and keeping track of music,
+organized into sections:
+
+- **Ratings** — bands → albums → songs, with a rating (Meh / Good / Great
+  / Amazing / Legendary) and "traits" (quick notes) that can each carry
+  their own classification.
+- **Weekly Rotation** — up to 6 bands per weekday whose discography you're
+  currently working through, plus an Others catch-all for anything not
+  tied to a specific day.
 
 There are two versions in this repository:
 
@@ -140,6 +145,12 @@ quick-pick list).
 
 ## Features
 
+### Sections
+
+The home screen is a picker between the two sections below.
+
+### Ratings
+
 - Add a band → inside the band, add an album → inside the album, add a
   song.
 - Bulk-import songs from a `.txt` file (one song per line).
@@ -158,3 +169,16 @@ quick-pick list).
 - The quick-option lists (traits and classifications) have their own
   editor to add, rename, or remove items — plus a **Reset to defaults**
   button to restore the built-in list.
+
+### Weekly Rotation
+
+- Monday through Saturday, each with up to 6 band slots: tap the dashed
+  **+** tile to add one (typing an existing band's name reuses it, a new
+  name creates it — shared with the Ratings section's band list), tap the
+  **×** on a tile to remove it.
+- The first slot is the featured pick for that day, shown with a bright
+  ring and a "2×" badge, meaning it's the discography getting roughly
+  double the listens that month. With only 1–2 bands in a day, there's no
+  "background" pick to contrast against, so all of them are featured.
+- **Others**, at the bottom, is the same kind of list but not tied to a
+  day and never features anyone — for anything else you're sampling.

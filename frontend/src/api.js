@@ -89,4 +89,13 @@ export const api = {
       body: JSON.stringify({ label }),
     }),
   deleteOption: (id) => request(`/options/${id}`, { method: "DELETE" }),
+
+  // Weekly rotation
+  listRotation: () => request("/rotation"),
+  addRotationSlot: (day, bandId) =>
+    request("/rotation", {
+      method: "POST",
+      body: JSON.stringify({ day, band_id: bandId }),
+    }),
+  deleteRotationSlot: (id) => request(`/rotation/${id}`, { method: "DELETE" }),
 };

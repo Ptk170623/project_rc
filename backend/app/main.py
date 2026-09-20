@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .database import Base, SessionLocal, engine
-from .routers import albums, bands, options, songs, traits
+from .routers import albums, bands, options, rotation, songs, traits
 
 DEFAULT_TRAIT_OPTIONS = [
     "Vocal",
@@ -62,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(songs.router)
     app.include_router(traits.router)
     app.include_router(options.router)
+    app.include_router(rotation.router)
 
     @app.get("/health")
     def health():

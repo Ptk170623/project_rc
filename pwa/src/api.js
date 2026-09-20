@@ -65,9 +65,9 @@ export const api = {
 
   deleteBand: (bandId) =>
     withStore(
-      ["bands", "albums", "songs", "traits"],
+      ["bands", "albums", "songs", "traits", "rotation_slots"],
       "readwrite",
-      async ({ bands, albums, songs, traits }) => {
+      async ({ bands, albums, songs, traits, rotation_slots }) => {
         const id = Number(bandId);
         const albumList = await reqIndexAll(albums, "band_id", id);
         for (const album of albumList) {
@@ -78,6 +78,10 @@ export const api = {
             await reqDelete(songs, song.id);
           }
           await reqDelete(albums, album.id);
+        }
+        const allSlots = await reqAll(rotation_slots);
+        for (const slot of allSlots) {
+          if (slot.band_id === id) await reqDelete(rotation_slots, slot.id);
         }
         await reqDelete(bands, id);
       }
@@ -247,12 +251,39 @@ export const api = {
   deleteOption: (id) =>
     withStore("options", "readwrite", (store) => reqDelete(store, Number(id))),
 
+  // ---------- Weekly rotation ----------
+  listRotation: () =>
+    withStore(
+      ["rotation_slots", "bands"],
+      "readonly",
+      async ({ rotation_slots, bands }) => {
+        const all = await reqAll(rotation_slots);
+        all.sort((a, b) => a.position - b.position);
+        for (const slot of all) {
+          const band = await reqGet(bands, slot.band_id);
+          slot.band = band ? { id: band.id, name: band.name } : { id: slot.band_id, name: "Unknown" };
+        }
+        return all;
+      }
+    ),
+
+  addRotationSlot: (day, bandId) =>
+    withStore("rotation_slots", "readwrite", async (store) => {
+      const existing = await reqIndexAll(store, "day", day);
+      const record = { day, band_id: Number(bandId), position: maxPosition(existing) + 1 };
+      record.id = await reqAdd(store, record);
+      return record;
+    }),
+
+  deleteRotationSlot: (id) =>
+    withStore("rotation_slots", "readwrite", (store) => reqDelete(store, Number(id))),
+
   // ---------- Backup ----------
   exportAll: () =>
     withStore(
-      ["bands", "albums", "songs", "traits", "options"],
+      ["bands", "albums", "songs", "traits", "options", "rotation_slots"],
       "readonly",
-      async ({ bands, albums, songs, traits, options }) => ({
+      async ({ bands, albums, songs, traits, options, rotation_slots }) => ({
         version: 1,
         exported_at: new Date().toISOString(),
         bands: await reqAll(bands),
@@ -260,15 +291,16 @@ export const api = {
         songs: await reqAll(songs),
         traits: await reqAll(traits),
         options: await reqAll(options),
+        rotation_slots: await reqAll(rotation_slots),
       })
     ),
 
   importAll: (data) =>
     withStore(
-      ["bands", "albums", "songs", "traits", "options"],
+      ["bands", "albums", "songs", "traits", "options", "rotation_slots"],
       "readwrite",
-      async ({ bands, albums, songs, traits, options }) => {
-        for (const store of [bands, albums, songs, traits, options]) {
+      async ({ bands, albums, songs, traits, options, rotation_slots }) => {
+        for (const store of [bands, albums, songs, traits, options, rotation_slots]) {
           const keys = await new Promise((resolve, reject) => {
             const req = store.getAllKeys();
             req.onsuccess = () => resolve(req.result);
@@ -281,6 +313,7 @@ export const api = {
         for (const record of data.songs || []) await reqPut(songs, record);
         for (const record of data.traits || []) await reqPut(traits, record);
         for (const record of data.options || []) await reqPut(options, record);
+        for (const record of data.rotation_slots || []) await reqPut(rotation_slots, record);
       }
     ),
 };

@@ -13,6 +13,15 @@ from .database import Base
 
 RATING_VALUES = ("C", "B", "G", "A", "S")
 OPTION_KINDS = ("trait", "subtrait")
+ROTATION_DAYS = (
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "others",
+)
 
 
 class Band(Base):
@@ -24,6 +33,9 @@ class Band(Base):
 
     albums: Mapped[list["Album"]] = relationship(
         back_populates="band", cascade="all, delete-orphan", order_by="Album.id"
+    )
+    rotation_slots: Mapped[list["RotationSlot"]] = relationship(
+        back_populates="band", cascade="all, delete-orphan"
     )
 
 
@@ -87,3 +99,21 @@ class QuickOption(Base):
     kind: Mapped[str] = mapped_column(String(10), nullable=False)
     label: Mapped[str] = mapped_column(String(200), nullable=False)
     position: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class RotationSlot(Base):
+    """A band slot on one weekday (or the "others" catch-all) in the
+    Weekly Rotation section."""
+
+    __tablename__ = "rotation_slots"
+    __table_args__ = (
+        CheckConstraint(f"day IN {ROTATION_DAYS}", name="ck_rotation_day"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    day: Mapped[str] = mapped_column(String(10), nullable=False)
+    band_id: Mapped[int] = mapped_column(ForeignKey("bands.id"), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    band: Mapped["Band"] = relationship(back_populates="rotation_slots")

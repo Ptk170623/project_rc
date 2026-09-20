@@ -1,37 +1,60 @@
 const DB_NAME = "music_journal";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
+// Every store creation is guarded by objectStoreNames.contains(): this runs
+// for a brand new database (all stores get created) and for an upgrade of
+// an already-installed one (only stores added since its version are
+// missing), and createObjectStore throws if called on a name that already
+// exists, so the guard is required either way.
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
 
-      db.createObjectStore("bands", { keyPath: "id", autoIncrement: true });
+      if (!db.objectStoreNames.contains("bands")) {
+        db.createObjectStore("bands", { keyPath: "id", autoIncrement: true });
+      }
 
-      const albums = db.createObjectStore("albums", {
-        keyPath: "id",
-        autoIncrement: true,
-      });
-      albums.createIndex("band_id", "band_id");
+      if (!db.objectStoreNames.contains("albums")) {
+        const albums = db.createObjectStore("albums", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+        albums.createIndex("band_id", "band_id");
+      }
 
-      const songs = db.createObjectStore("songs", {
-        keyPath: "id",
-        autoIncrement: true,
-      });
-      songs.createIndex("album_id", "album_id");
+      if (!db.objectStoreNames.contains("songs")) {
+        const songs = db.createObjectStore("songs", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+        songs.createIndex("album_id", "album_id");
+      }
 
-      const traits = db.createObjectStore("traits", {
-        keyPath: "id",
-        autoIncrement: true,
-      });
-      traits.createIndex("song_id", "song_id");
+      if (!db.objectStoreNames.contains("traits")) {
+        const traits = db.createObjectStore("traits", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+        traits.createIndex("song_id", "song_id");
+      }
 
-      const options = db.createObjectStore("options", {
-        keyPath: "id",
-        autoIncrement: true,
-      });
-      options.createIndex("kind", "kind");
+      if (!db.objectStoreNames.contains("options")) {
+        const options = db.createObjectStore("options", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+        options.createIndex("kind", "kind");
+      }
+
+      if (!db.objectStoreNames.contains("rotation_slots")) {
+        const rotation = db.createObjectStore("rotation_slots", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+        rotation.createIndex("day", "day");
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
