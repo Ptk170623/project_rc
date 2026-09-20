@@ -31,6 +31,14 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
     onRefresh();
   };
 
+  const removeSong = async () => {
+    if (!window.confirm(`Delete "${song.name}"? This also deletes its traits and rating.`)) {
+      return;
+    }
+    await api.deleteSong(song.id);
+    onRefresh();
+  };
+
   return (
     <div className="song-card">
       <div className="song-pill" onClick={() => setExpanded((v) => !v)}>
@@ -110,6 +118,10 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
               <li className="empty-hint">No traits yet.</li>
             )}
           </ul>
+
+          <button className="btn btn-small btn-danger delete-song-btn" onClick={removeSong}>
+            Delete song
+          </button>
         </div>
       )}
     </div>

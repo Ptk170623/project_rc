@@ -188,8 +188,14 @@ body {
   flex-direction: column;
   gap: 10px;
 }
+.card-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .entity-card {
   display: block;
+  flex: 1;
   padding: 16px 20px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -203,6 +209,9 @@ body {
 .entity-card:hover {
   border-color: var(--accent);
   background: var(--surface-2);
+}
+.entity-delete {
+  flex-shrink: 0;
 }
 
 /* Song list & pill card */
@@ -379,6 +388,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.delete-song-btn {
+  margin-top: 14px;
 }
 .trait-detail-item {
   background: var(--surface);

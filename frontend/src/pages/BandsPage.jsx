@@ -13,6 +13,15 @@ export default function BandsPage() {
     load();
   }, []);
 
+  const removeBand = async (e, id, name) => {
+    e.preventDefault();
+    if (!window.confirm(`Delete "${name}"? This also deletes its albums, songs, and ratings.`)) {
+      return;
+    }
+    await api.deleteBand(id);
+    load();
+  };
+
   return (
     <div>
       <Link to="/" className="breadcrumb">
@@ -41,6 +50,14 @@ export default function BandsPage() {
               <Link className="entity-card" to={`/bands/${band.id}`}>
                 {band.name}
               </Link>
+              <button
+                type="button"
+                className="btn btn-small btn-danger entity-delete"
+                onClick={(e) => removeBand(e, band.id, band.name)}
+                aria-label={`Delete ${band.name}`}
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>

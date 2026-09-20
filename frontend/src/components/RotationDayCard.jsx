@@ -45,7 +45,7 @@ export default function RotationDayCard({
             </div>
           );
         })}
-        {n < MAX_SLOTS && (
+        {(neverFeatured || n < MAX_SLOTS) && (
           <AddBandTile bands={bands} onAdd={onAdd} datalistId={`known-bands-${dayKey}`} />
         )}
       </div>
