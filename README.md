@@ -1,8 +1,9 @@
 # Music Journal
 
 A personal app for logging impressions on songs while actively listening:
-bands → albums → songs, with a rating (C/B/A/S) and "traits" (quick notes)
-that can each carry their own classification.
+bands → albums → songs, with a rating (Meh / Good / Great / Amazing /
+Legendary) and "traits" (quick notes) that can each carry their own
+classification.
 
 There are two versions in this repository:
 
@@ -143,9 +144,9 @@ quick-pick list).
   song.
 - Bulk-import songs from a `.txt` file (one song per line).
 - Each song shows up as a "banner" (a rectangle with rounded ends)
-  displaying: the song name in a large font; the band and album in a
-  smaller font on the right; a square with the rating (C, B, A or S —
-  click to choose).
+  displaying: the band and album in a small font at the top; the song name
+  in a large font below it; and a colored pill with the rating (Meh, Good,
+  Great, Amazing, or Legendary — click to choose) on the right.
 - Clicking a song expands a panel to manage its "traits":
   - The **+** button opens a quick list of options (editable) or lets you
     type free text. It stays open after each pick, so you can add several

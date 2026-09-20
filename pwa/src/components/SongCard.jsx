@@ -34,22 +34,22 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
   return (
     <div className="song-card">
       <div className="song-pill" onClick={() => setExpanded((v) => !v)}>
-        <div className="song-pill-traits">
-          {song.traits.map((t) => (
-            <span key={t.id} className="trait-chip">
-              {t.sub_text && <span className="trait-chip-sub">{t.sub_text}</span>}
-              <span className="trait-chip-text">{t.text}</span>
-            </span>
-          ))}
+        <div className="song-pill-top">
+          <div className="song-pill-traits">
+            {song.traits.map((t) => (
+              <span key={t.id} className="trait-chip">
+                {t.sub_text && <span className="trait-chip-sub">{t.sub_text}</span>}
+                <span className="trait-chip-text">{t.text}</span>
+              </span>
+            ))}
+          </div>
+          <span className="song-context">
+            {bandName} · {albumName}
+          </span>
         </div>
         <div className="song-pill-main">
           <span className="song-name">{song.name}</span>
-          <div className="song-side">
-            <span className="song-context">
-              {bandName} · {albumName}
-            </span>
-            <RatingBadge rating={song.rating} onChange={changeRating} />
-          </div>
+          <RatingBadge rating={song.rating} onChange={changeRating} />
         </div>
       </div>
 

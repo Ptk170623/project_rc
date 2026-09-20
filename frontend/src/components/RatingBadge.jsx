@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-
-const RATINGS = ["S", "A", "B", "C"];
+import { RATING_TIERS, TIERS_BY_CODE } from "../ratingTiers.js";
 
 export default function RatingBadge({ rating, onChange }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
+  const current = rating ? TIERS_BY_CODE[rating] : null;
 
   useEffect(() => {
     if (!open) return;
@@ -21,28 +21,30 @@ export default function RatingBadge({ rating, onChange }) {
     <div className="rating-badge-wrap" ref={wrapRef}>
       <button
         type="button"
-        className={`rating-badge rating-${rating || "none"}`}
+        className={`rating-pill-badge ${current ? "" : "unrated"}`}
+        style={current ? { background: current.color, color: current.text } : undefined}
         onClick={(e) => {
           e.stopPropagation();
           setOpen((v) => !v);
         }}
       >
-        {rating || "?"}
+        {current ? current.label : "Rate"}
       </button>
       {open && (
         <div className="rating-picker">
-          {RATINGS.map((r) => (
+          {RATING_TIERS.map((tier) => (
             <button
-              key={r}
+              key={tier.code}
               type="button"
-              className={`rating-option rating-${r} ${rating === r ? "active" : ""}`}
+              className={`rating-option ${rating === tier.code ? "active" : ""}`}
+              style={{ background: tier.color, color: tier.text }}
               onClick={(e) => {
                 e.stopPropagation();
-                onChange(r === rating ? null : r);
+                onChange(tier.code === rating ? null : tier.code);
                 setOpen(false);
               }}
             >
-              {r}
+              {tier.label}
             </button>
           ))}
         </div>

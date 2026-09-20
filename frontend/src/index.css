@@ -10,11 +10,6 @@
   --accent-strong: #5c7cfa;
   --danger: #e05a5a;
 
-  --rating-s: #f2b705;
-  --rating-a: #4caf7d;
-  --rating-b: #4a90d9;
-  --rating-c: #9aa0a6;
-
   --subtrait-color: #f2b705;
 }
 
@@ -219,11 +214,19 @@ body {
   border-color: var(--accent);
 }
 
+.song-pill-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  min-height: 14px;
+}
+
 .song-pill-traits {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 10px;
-  min-height: 14px;
 }
 
 .trait-chip {
@@ -257,103 +260,73 @@ body {
   white-space: nowrap;
 }
 
-.song-side {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
 .song-context {
   font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Rating badge */
 .rating-badge-wrap {
   position: relative;
+  flex-shrink: 0;
 }
 
-.rating-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
+.rating-pill-badge {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 8px 16px;
+  border-radius: 999px;
   font-weight: 800;
-  font-size: 15px;
-  color: #14161b;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
   border: 2px solid transparent;
   font-family: inherit;
-  padding: 0;
   cursor: pointer;
   touch-action: manipulation;
 }
-.rating-badge.rating-none {
+.rating-pill-badge.unrated {
   background: transparent;
   border: 2px dashed var(--border);
   color: var(--text-muted);
 }
-.rating-badge.rating-S {
-  background: var(--rating-s);
-}
-.rating-badge.rating-A {
-  background: var(--rating-a);
-}
-.rating-badge.rating-B {
-  background: var(--rating-b);
-  color: white;
-}
-.rating-badge.rating-C {
-  background: var(--rating-c);
-}
 
 .rating-picker {
   display: flex;
+  flex-direction: column;
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 6px;
   gap: 4px;
   z-index: 20;
+  min-width: 150px;
 }
 .rating-option {
-  width: 34px;
-  height: 34px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 700;
-  font-size: 13px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: left;
   cursor: pointer;
   font-family: inherit;
   touch-action: manipulation;
+  opacity: 0.75;
+  transition: opacity 0.1s;
 }
-.rating-option.rating-S.active,
-.rating-option.rating-S:hover {
-  background: var(--rating-s);
-  color: #14161b;
-}
-.rating-option.rating-A.active,
-.rating-option.rating-A:hover {
-  background: var(--rating-a);
-  color: #14161b;
-}
-.rating-option.rating-B.active,
-.rating-option.rating-B:hover {
-  background: var(--rating-b);
-  color: white;
-}
-.rating-option.rating-C.active,
-.rating-option.rating-C:hover {
-  background: var(--rating-c);
-  color: #14161b;
+.rating-option:hover,
+.rating-option.active {
+  opacity: 1;
 }
 
 /* Song dropdown (expanded detail) */
@@ -533,18 +506,12 @@ body {
     padding: 12px 16px;
     border-radius: 24px;
   }
-  .song-pill-main {
-    flex-wrap: wrap;
-    row-gap: 6px;
-  }
   .song-name {
     font-size: 18px;
-    white-space: normal;
-    flex: 1 1 100%;
   }
-  .song-side {
-    width: 100%;
-    justify-content: space-between;
+  .rating-pill-badge {
+    padding: 7px 12px;
+    font-size: 11px;
   }
   .song-context {
     white-space: normal;

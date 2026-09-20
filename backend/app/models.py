@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
-RATING_VALUES = ("C", "B", "A", "S")
+RATING_VALUES = ("C", "B", "G", "A", "S")
 OPTION_KINDS = ("trait", "subtrait")
 
 

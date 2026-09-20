@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-Rating = Literal["C", "B", "A", "S"]
+Rating = Literal["C", "B", "G", "A", "S"]
 OptionKind = Literal["trait", "subtrait"]
 
 
