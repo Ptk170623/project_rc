@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -188,4 +190,111 @@ async def import_songs(
         created_count=created_count,
         skipped=skipped,
         lineup_count=len(lineup),
+    )
+
+
+@router.post("/data", response_model=schemas.DataImportResult, status_code=201)
+async def import_data(file: UploadFile, db: Session = Depends(get_db)):
+    """Selective import from a `.json` file produced by a band's or album's
+    Export button. Merges into whatever's already on this device instead of
+    replacing it: an existing band/album (matched by name, case-insensitive)
+    is reused, an existing song (matched by name within its album) is left
+    alone, and lineup entries are upserted by instrument."""
+    raw = (await file.read()).decode("utf-8", errors="ignore")
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        raise HTTPException(400, "Not a valid JSON export file.")
+
+    file_type = payload.get("type")
+    if file_type == "band":
+        band_name = payload["band"]["name"]
+        album_list = payload["band"].get("albums", [])
+        is_single_album = False
+    elif file_type == "album":
+        band_name = payload["band_name"]
+        album_list = [payload["album"]]
+        is_single_album = True
+    else:
+        raise HTTPException(400, "Unrecognized export file (expected a band or album export).")
+
+    band = _find_or_create_band(db, band_name)
+
+    songs_created = 0
+    songs_skipped = 0
+    lineup_upserted = 0
+    result_album_id = None
+
+    for album_data in album_list:
+        album = _find_or_create_album(db, band.id, album_data["name"])
+        if is_single_album:
+            result_album_id = album.id
+
+        lineup_position = (
+            db.query(func.max(models.AlbumLineup.position))
+            .filter(models.AlbumLineup.album_id == album.id)
+            .scalar()
+            or 0
+        )
+        for entry in album_data.get("lineup", []):
+            existing = next(
+                (e for e in album.lineup if e.instrument.lower() == entry["instrument"].lower()),
+                None,
+            )
+            if existing:
+                existing.performer = entry["performer"]
+            else:
+                lineup_position += 1
+                db.add(
+                    models.AlbumLineup(
+                        album_id=album.id,
+                        instrument=entry["instrument"],
+                        performer=entry["performer"],
+                        position=lineup_position,
+                    )
+                )
+            lineup_upserted += 1
+
+        existing_names = {s.name.lower() for s in album.songs}
+        position = (
+            db.query(func.max(models.Song.position))
+            .filter(models.Song.album_id == album.id)
+            .scalar()
+            or 0
+        )
+        for song_data in album_data.get("songs", []):
+            if song_data["name"].lower() in existing_names:
+                songs_skipped += 1
+                continue
+            position += 1
+            song = models.Song(
+                album_id=album.id,
+                name=song_data["name"],
+                rating=song_data.get("rating"),
+                position=position,
+            )
+            db.add(song)
+            db.flush()
+            for i, trait_data in enumerate(song_data.get("traits", []), start=1):
+                db.add(
+                    models.SongTrait(
+                        song_id=song.id,
+                        text=trait_data["text"],
+                        highlight=trait_data.get("highlight"),
+                        performer=trait_data.get("performer"),
+                        position=i,
+                    )
+                )
+            songs_created += 1
+            existing_names.add(song_data["name"].lower())
+
+    db.commit()
+
+    return schemas.DataImportResult(
+        band_id=band.id,
+        band_name=band.name,
+        album_id=result_album_id,
+        songs_created=songs_created,
+        songs_skipped=songs_skipped,
+        lineup_upserted=lineup_upserted,
     )

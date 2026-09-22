@@ -34,6 +34,34 @@ function maxPosition(items) {
   return items.reduce((max, item) => Math.max(max, item.position || 0), 0);
 }
 
+// Shared by exportBand/exportAlbum: builds one album's {name, lineup, songs}
+// export shape from its rows in the songs/traits/album_lineup stores.
+async function exportAlbumData(album, { songs, traits, album_lineup }) {
+  const songList = await reqIndexAll(songs, "album_id", album.id);
+  songList.sort((a, b) => a.position - b.position);
+  const songExports = [];
+  for (const song of songList) {
+    const traitList = await reqIndexAll(traits, "song_id", song.id);
+    traitList.sort((a, b) => a.position - b.position);
+    songExports.push({
+      name: song.name,
+      rating: song.rating || null,
+      traits: traitList.map((t) => ({
+        text: t.text,
+        highlight: t.highlight || null,
+        performer: t.performer || null,
+      })),
+    });
+  }
+  const lineupList = await reqIndexAll(album_lineup, "album_id", album.id);
+  lineupList.sort((a, b) => a.position - b.position);
+  return {
+    name: album.name,
+    lineup: lineupList.map((e) => ({ instrument: e.instrument, performer: e.performer })),
+    songs: songExports,
+  };
+}
+
 // Mirrors the backend's plain-text import format: a bare list of song names
 // still works with zero markup; optional `Band:`/`Album:` header lines,
 // an optional `Lineup:` section (`Instrument: Performer` pairs upserted as
@@ -152,6 +180,28 @@ export const api = {
       }
     ),
 
+  exportBand: (bandId) =>
+    withStore(
+      ["bands", "albums", "songs", "traits", "album_lineup"],
+      "readonly",
+      async ({ bands, albums, songs, traits, album_lineup }) => {
+        const band = await reqGet(bands, Number(bandId));
+        if (!band) throw notFound("Band");
+        const albumList = await reqIndexAll(albums, "band_id", band.id);
+        albumList.sort((a, b) => a.id - b.id);
+        const albumExports = [];
+        for (const album of albumList) {
+          albumExports.push(await exportAlbumData(album, { songs, traits, album_lineup }));
+        }
+        return {
+          type: "band",
+          version: 1,
+          exported_at: new Date().toISOString(),
+          band: { name: band.name, albums: albumExports },
+        };
+      }
+    ),
+
   // ---------- Albums ----------
   createAlbum: (bandId, name) =>
     withStore("albums", "readwrite", async (store) => {
@@ -182,6 +232,24 @@ export const api = {
           band_name: band ? band.name : "",
           songs: songList,
           lineup: lineupList,
+        };
+      }
+    ),
+
+  exportAlbum: (albumId) =>
+    withStore(
+      ["albums", "bands", "songs", "traits", "album_lineup"],
+      "readonly",
+      async ({ albums, bands, songs, traits, album_lineup }) => {
+        const album = await reqGet(albums, Number(albumId));
+        if (!album) throw notFound("Album");
+        const band = await reqGet(bands, album.band_id);
+        return {
+          type: "album",
+          version: 1,
+          exported_at: new Date().toISOString(),
+          band_name: band ? band.name : "",
+          album: await exportAlbumData(album, { songs, traits, album_lineup }),
         };
       }
     ),
@@ -392,6 +460,137 @@ export const api = {
             created_count: createdCount,
             skipped,
             lineup_count: lineup.length,
+          };
+        }
+      )
+    ),
+
+  // ---------- Selective export/import (by band or by album) ----------
+  // Client-side counterpart to the backend's /import/data endpoint: merges
+  // a band/album JSON export into whatever's already on this device instead
+  // of replacing it (matches an existing band/album by name and an existing
+  // song by name within its album, and upserts lineup entries by
+  // instrument), rather than the full-device wipe-and-replace of
+  // exportAll/importAll below.
+  importData: (file) =>
+    file.text().then((raw) =>
+      withStore(
+        ["bands", "albums", "album_lineup", "songs", "traits"],
+        "readwrite",
+        async ({ bands, albums, album_lineup, songs, traits }) => {
+          let payload;
+          try {
+            payload = JSON.parse(raw);
+          } catch {
+            const err = new Error("Not a valid JSON export file.");
+            err.status = 400;
+            throw err;
+          }
+
+          let bandName;
+          let albumList;
+          let isSingleAlbum;
+          if (payload.type === "band") {
+            bandName = payload.band.name;
+            albumList = payload.band.albums || [];
+            isSingleAlbum = false;
+          } else if (payload.type === "album") {
+            bandName = payload.band_name;
+            albumList = [payload.album];
+            isSingleAlbum = true;
+          } else {
+            const err = new Error(
+              "Unrecognized export file (expected a band or album export)."
+            );
+            err.status = 400;
+            throw err;
+          }
+
+          const allBands = await reqAll(bands);
+          let band = allBands.find((b) => b.name.toLowerCase() === bandName.toLowerCase());
+          if (!band) {
+            band = { name: bandName };
+            band.id = await reqAdd(bands, band);
+          }
+
+          let songsCreated = 0;
+          let songsSkipped = 0;
+          let lineupUpserted = 0;
+          let resultAlbumId = null;
+
+          for (const albumData of albumList) {
+            const bandAlbums = await reqIndexAll(albums, "band_id", band.id);
+            let album = bandAlbums.find(
+              (a) => a.name.toLowerCase() === albumData.name.toLowerCase()
+            );
+            if (!album) {
+              album = { band_id: band.id, name: albumData.name };
+              album.id = await reqAdd(albums, album);
+            }
+            if (isSingleAlbum) resultAlbumId = album.id;
+
+            const existingLineup = await reqIndexAll(album_lineup, "album_id", album.id);
+            let lineupPosition = maxPosition(existingLineup);
+            for (const entry of albumData.lineup || []) {
+              const match = existingLineup.find(
+                (e) => e.instrument.toLowerCase() === entry.instrument.toLowerCase()
+              );
+              if (match) {
+                match.performer = entry.performer;
+                await reqPut(album_lineup, match);
+              } else {
+                lineupPosition += 1;
+                const newEntry = {
+                  album_id: album.id,
+                  instrument: entry.instrument,
+                  performer: entry.performer,
+                  position: lineupPosition,
+                };
+                newEntry.id = await reqAdd(album_lineup, newEntry);
+                existingLineup.push(newEntry);
+              }
+              lineupUpserted += 1;
+            }
+
+            const existingSongs = await reqIndexAll(songs, "album_id", album.id);
+            const existingNames = new Set(existingSongs.map((s) => s.name.toLowerCase()));
+            let position = maxPosition(existingSongs);
+            for (const songData of albumData.songs || []) {
+              if (existingNames.has(songData.name.toLowerCase())) {
+                songsSkipped += 1;
+                continue;
+              }
+              position += 1;
+              const song = {
+                album_id: album.id,
+                name: songData.name,
+                rating: songData.rating || null,
+                position,
+              };
+              song.id = await reqAdd(songs, song);
+              let i = 1;
+              for (const trait of songData.traits || []) {
+                await reqAdd(traits, {
+                  song_id: song.id,
+                  text: trait.text,
+                  highlight: trait.highlight || null,
+                  performer: trait.performer || null,
+                  position: i,
+                });
+                i += 1;
+              }
+              songsCreated += 1;
+              existingNames.add(songData.name.toLowerCase());
+            }
+          }
+
+          return {
+            band_id: band.id,
+            band_name: band.name,
+            album_id: resultAlbumId,
+            songs_created: songsCreated,
+            songs_skipped: songsSkipped,
+            lineup_upserted: lineupUpserted,
           };
         }
       )

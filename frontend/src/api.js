@@ -86,6 +86,15 @@ export const api = {
     return request(`/import/songs`, { method: "POST", body: formData });
   },
 
+  // Selective export/import (by band or by album)
+  exportBand: (bandId) => request(`/bands/${bandId}/export`),
+  exportAlbum: (albumId) => request(`/albums/${albumId}/export`),
+  importData: (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return request(`/import/data`, { method: "POST", body: formData });
+  },
+
   // Quick options
   listOptions: (kind) => request(`/options?kind=${kind}`),
   createOption: (kind, label) =>

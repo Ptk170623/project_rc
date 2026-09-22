@@ -5,6 +5,7 @@ import InlineAddForm from "../components/InlineAddForm.jsx";
 import SongCard from "../components/SongCard.jsx";
 import LineupEditor from "../components/LineupEditor.jsx";
 import { downloadImportTemplate } from "../importTemplate.js";
+import { downloadJSON, safeFileSlug } from "../downloadFile.js";
 
 export default function AlbumPage() {
   const { albumId } = useParams();
@@ -28,8 +29,12 @@ export default function AlbumPage() {
     if (!file) return;
     setBulkBusy(true);
     try {
-      const result = await api.importSongs(file, Number(albumId));
-      if (String(result.album_id) !== albumId) {
+      const result = file.name.toLowerCase().endsWith(".json")
+        ? await api.importData(file)
+        : await api.importSongs(file, Number(albumId));
+      if (result.album_id == null) {
+        navigate(`/bands/${result.band_id}`);
+      } else if (String(result.album_id) !== albumId) {
         navigate(`/albums/${result.album_id}`);
       } else {
         load();
@@ -37,6 +42,11 @@ export default function AlbumPage() {
     } finally {
       setBulkBusy(false);
     }
+  };
+
+  const exportAlbum = async () => {
+    const data = await api.exportAlbum(album.id);
+    downloadJSON(`album-${safeFileSlug(album.band_name)}-${safeFileSlug(album.name)}.json`, data);
   };
 
   if (loading) return <p className="empty-hint">Loading…</p>;
@@ -61,12 +71,15 @@ export default function AlbumPage() {
           <button className="btn btn-secondary" onClick={() => setShowLineup(true)}>
             Lineup
           </button>
+          <button className="btn btn-secondary" onClick={exportAlbum}>
+            Export album
+          </button>
           <button
             className="btn btn-secondary"
             disabled={bulkBusy}
             onClick={() => fileInputRef.current?.click()}
           >
-            {bulkBusy ? "Importing…" : "Import list (.txt)"}
+            {bulkBusy ? "Importing…" : "Import (.txt/.json)"}
           </button>
           <button className="btn btn-ghost" onClick={downloadImportTemplate}>
             Download template
@@ -74,7 +87,7 @@ export default function AlbumPage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".txt"
+            accept=".txt,.json"
             hidden
             onChange={handleBulkFile}
           />

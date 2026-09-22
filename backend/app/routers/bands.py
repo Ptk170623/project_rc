@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -36,3 +38,39 @@ def delete_band(band_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Band not found")
     db.delete(band)
     db.commit()
+
+
+@router.get("/{band_id}/export", response_model=schemas.BandExportFile)
+def export_band(band_id: int, db: Session = Depends(get_db)):
+    band = db.get(models.Band, band_id)
+    if not band:
+        raise HTTPException(404, "Band not found")
+    return schemas.BandExportFile(
+        exported_at=datetime.utcnow(),
+        band=schemas.BandExport(
+            name=band.name,
+            albums=[
+                schemas.AlbumExport(
+                    name=album.name,
+                    lineup=[
+                        schemas.LineupExport(instrument=e.instrument, performer=e.performer)
+                        for e in album.lineup
+                    ],
+                    songs=[
+                        schemas.SongExport(
+                            name=song.name,
+                            rating=song.rating,
+                            traits=[
+                                schemas.TraitExport(
+                                    text=t.text, highlight=t.highlight, performer=t.performer
+                                )
+                                for t in song.traits
+                            ],
+                        )
+                        for song in album.songs
+                    ],
+                )
+                for album in band.albums
+            ],
+        ),
+    )

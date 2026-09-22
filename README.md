@@ -133,8 +133,15 @@ publish to an HTTPS host for real phone use.
 Since data lives only in that device's browser (clearing the site's data,
 uninstalling the app, or switching phones wipes it), the app has
 **Export backup** / **Import backup** buttons at the top, which save/
-restore everything to a `.json` file. Worth exporting every once in a
-while.
+restore *everything* to a `.json` file — note that **Import backup**
+replaces all data currently on that device, it doesn't merge. Worth
+exporting every once in a while.
+
+To move just one band or album instead — to another device, or to share
+with someone else — use **Export band** / **Export album** and the
+matching **Import** buttons on the band/album pages (see **Ratings**
+below). Unlike the full backup, these merge into whatever's already
+there instead of replacing it.
 
 If you already installed the app before its default trait options
 changed, those defaults won't retroactively update on your device — code
@@ -179,14 +186,23 @@ The home screen is a picker between the two sections below.
   performer for each instrument across the whole album (e.g. "Guitar →
   Jonny Greenwood") — add, rename, or remove entries. Any song's trait
   matching that instrument name shows this performer unless overridden.
-- **Import list (.txt)** bulk-adds songs from a text file. The simplest
-  form is still just one song name per line. Optionally, the file can also
-  set the band/album to import into and define the lineup and per-song
-  performer overrides — see **Download template** on the album page for
-  the exact syntax with examples.
+- **Import (.txt/.json)** on the album page bulk-adds songs. A `.txt` file
+  is the simplest form (just one song name per line), optionally with
+  `Band:`/`Album:`/`Lineup:` sections and per-song performer overrides —
+  see **Download template** for the exact syntax. A `.json` file is an
+  album exported from this app or another device (see below).
 - The quick trait-option list has its own editor to add, rename, or
   remove items — plus a **Reset to defaults** button to restore the
   built-in list.
+- **Export band** / **Export album** (band page / album page) download a
+  `.json` snapshot of just that band or album. **Import band (.json)** on
+  the band page, or the same `.json` file dropped onto **Import
+  (.txt/.json)** on the album page, merges it back in: an existing
+  band/album with the same name is reused rather than duplicated, songs
+  already present (matched by name) are left untouched, and lineup entries
+  are updated in place. This is the way to move a single band or album
+  between devices, or hand one off to someone else, without touching
+  anything else already on the target device.
 
 ### Weekly Rotation
 

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -41,3 +43,34 @@ def delete_album(album_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Album not found")
     db.delete(album)
     db.commit()
+
+
+@router.get("/albums/{album_id}/export", response_model=schemas.AlbumExportFile)
+def export_album(album_id: int, db: Session = Depends(get_db)):
+    album = db.get(models.Album, album_id)
+    if not album:
+        raise HTTPException(404, "Album not found")
+    return schemas.AlbumExportFile(
+        exported_at=datetime.utcnow(),
+        band_name=album.band.name,
+        album=schemas.AlbumExport(
+            name=album.name,
+            lineup=[
+                schemas.LineupExport(instrument=e.instrument, performer=e.performer)
+                for e in album.lineup
+            ],
+            songs=[
+                schemas.SongExport(
+                    name=song.name,
+                    rating=song.rating,
+                    traits=[
+                        schemas.TraitExport(
+                            text=t.text, highlight=t.highlight, performer=t.performer
+                        )
+                        for t in song.traits
+                    ],
+                )
+                for song in album.songs
+            ],
+        ),
+    )

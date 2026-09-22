@@ -108,6 +108,59 @@ class ImportResult(BaseModel):
     lineup_count: int
 
 
+# ---------- Selective export/import (by band or by album) ----------
+class TraitExport(BaseModel):
+    text: str
+    highlight: Optional[Highlight] = None
+    performer: Optional[str] = None
+
+
+class SongExport(BaseModel):
+    name: str
+    rating: Optional[Rating] = None
+    traits: list[TraitExport] = []
+
+
+class LineupExport(BaseModel):
+    instrument: str
+    performer: str
+
+
+class AlbumExport(BaseModel):
+    name: str
+    lineup: list[LineupExport] = []
+    songs: list[SongExport] = []
+
+
+class BandExport(BaseModel):
+    name: str
+    albums: list[AlbumExport] = []
+
+
+class BandExportFile(BaseModel):
+    type: Literal["band"] = "band"
+    version: int = 1
+    exported_at: datetime
+    band: BandExport
+
+
+class AlbumExportFile(BaseModel):
+    type: Literal["album"] = "album"
+    version: int = 1
+    exported_at: datetime
+    band_name: str
+    album: AlbumExport
+
+
+class DataImportResult(BaseModel):
+    band_id: int
+    band_name: str
+    album_id: Optional[int] = None
+    songs_created: int
+    songs_skipped: int
+    lineup_upserted: int
+
+
 # ---------- Band ----------
 class BandCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
