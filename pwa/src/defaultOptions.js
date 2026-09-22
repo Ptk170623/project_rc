@@ -10,9 +10,6 @@ export const DEFAULT_TRAIT_OPTIONS = [
   "Guitar solo",
 ];
 
-export const DEFAULT_SUBTRAIT_OPTIONS = ["Great", "Strong", "Low"];
-
 export const DEFAULTS_BY_KIND = {
   trait: DEFAULT_TRAIT_OPTIONS,
-  subtrait: DEFAULT_SUBTRAIT_OPTIONS,
 };

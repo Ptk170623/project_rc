@@ -2,11 +2,13 @@ import { useState } from "react";
 import { api } from "../api.js";
 import RatingBadge from "./RatingBadge.jsx";
 import QuickPicker from "./QuickPicker.jsx";
+import TraitEditor from "./TraitEditor.jsx";
+import { effectivePerformer, tierColorFor } from "../traitColor.js";
 
-export default function SongCard({ song, bandName, albumName, onRefresh }) {
+export default function SongCard({ song, bandName, albumName, lineup, onRefresh }) {
   const [expanded, setExpanded] = useState(false);
   const [showAddTrait, setShowAddTrait] = useState(false);
-  const [subtraitTargetId, setSubtraitTargetId] = useState(null);
+  const [editingTraitId, setEditingTraitId] = useState(null);
 
   const changeRating = async (rating) => {
     await api.updateSong(song.id, rating ? { rating } : { clear_rating: true });
@@ -19,9 +21,8 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
     onRefresh();
   };
 
-  const addSubtrait = async (traitId, subText) => {
-    await api.updateTrait(traitId, { sub_text: subText });
-    setSubtraitTargetId(null);
+  const saveTrait = async (traitId, patch) => {
+    await api.updateTrait(traitId, patch);
     onRefresh();
   };
 
@@ -39,18 +40,27 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
     onRefresh();
   };
 
+  const renderChip = (t) => {
+    const tier = tierColorFor(song.rating, t.highlight);
+    const performer = effectivePerformer(t, lineup);
+    const style = tier ? { "--trait-color": tier.color } : undefined;
+    return (
+      <span
+        key={t.id}
+        className={`trait-chip ${t.highlight || ""}`}
+        style={style}
+      >
+        {performer && <span className="trait-chip-person">{performer}</span>}
+        <span className="trait-chip-text">{t.text}</span>
+      </span>
+    );
+  };
+
   return (
     <div className="song-card">
       <div className="song-pill" onClick={() => setExpanded((v) => !v)}>
         <div className="song-pill-top">
-          <div className="song-pill-traits">
-            {song.traits.map((t) => (
-              <span key={t.id} className="trait-chip">
-                {t.sub_text && <span className="trait-chip-sub">{t.sub_text}</span>}
-                <span className="trait-chip-text">{t.text}</span>
-              </span>
-            ))}
-          </div>
+          <div className="song-pill-traits">{song.traits.map(renderChip)}</div>
           <span className="song-context">
             {bandName} · {albumName}
           </span>
@@ -83,37 +93,35 @@ export default function SongCard({ song, bandName, albumName, onRefresh }) {
           )}
 
           <ul className="trait-detail-list">
-            {song.traits.map((t) => (
-              <li key={t.id} className="trait-detail-item">
-                <div
-                  className="trait-detail-main"
-                  onClick={() =>
-                    setSubtraitTargetId(subtraitTargetId === t.id ? null : t.id)
-                  }
-                >
-                  <div className="trait-detail-text-wrap">
-                    {t.sub_text && (
-                      <span className="trait-detail-sub">{t.sub_text}</span>
-                    )}
-                    <span className="trait-detail-text">{t.text}</span>
-                  </div>
-                  <button
-                    className="btn btn-small btn-danger"
-                    onClick={(e) => removeTrait(t.id, e)}
+            {song.traits.map((t) => {
+              const defaultPerformer = effectivePerformer({ ...t, performer: null }, lineup);
+              return (
+                <li key={t.id} className="trait-detail-item">
+                  <div
+                    className="trait-detail-main"
+                    onClick={() =>
+                      setEditingTraitId(editingTraitId === t.id ? null : t.id)
+                    }
                   >
-                    Remove
-                  </button>
-                </div>
-                {subtraitTargetId === t.id && (
-                  <QuickPicker
-                    kind="subtrait"
-                    title="Classification"
-                    onPick={(text) => addSubtrait(t.id, text)}
-                    onClose={() => setSubtraitTargetId(null)}
-                  />
-                )}
-              </li>
-            ))}
+                    {renderChip(t)}
+                    <button
+                      className="btn btn-small btn-danger"
+                      onClick={(e) => removeTrait(t.id, e)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  {editingTraitId === t.id && (
+                    <TraitEditor
+                      trait={t}
+                      defaultPerformer={defaultPerformer}
+                      onSave={(patch) => saveTrait(t.id, patch)}
+                      onClose={() => setEditingTraitId(null)}
+                    />
+                  )}
+                </li>
+              );
+            })}
             {song.traits.length === 0 && (
               <li className="empty-hint">No traits yet.</li>
             )}

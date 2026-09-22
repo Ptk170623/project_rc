@@ -48,14 +48,6 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ name }),
     }),
-  bulkCreateSongs: (albumId, file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    return request(`/albums/${albumId}/songs/bulk`, {
-      method: "POST",
-      body: formData,
-    });
-  },
   updateSong: (songId, payload) =>
     request(`/songs/${songId}`, {
       method: "PATCH",
@@ -64,10 +56,10 @@ export const api = {
   deleteSong: (songId) => request(`/songs/${songId}`, { method: "DELETE" }),
 
   // Traits
-  addTrait: (songId, text, subText) =>
+  addTrait: (songId, text) =>
     request(`/songs/${songId}/traits`, {
       method: "POST",
-      body: JSON.stringify({ text, sub_text: subText || null }),
+      body: JSON.stringify({ text }),
     }),
   updateTrait: (traitId, payload) =>
     request(`/traits/${traitId}`, {
@@ -75,6 +67,24 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   deleteTrait: (traitId) => request(`/traits/${traitId}`, { method: "DELETE" }),
+
+  // Album lineup
+  addLineupEntry: (albumId, instrument, performer) =>
+    request(`/albums/${albumId}/lineup`, {
+      method: "POST",
+      body: JSON.stringify({ instrument, performer }),
+    }),
+  updateLineupEntry: (id, payload) =>
+    request(`/lineup/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteLineupEntry: (id) => request(`/lineup/${id}`, { method: "DELETE" }),
+
+  // Bulk import
+  importSongs: (file, albumId) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (albumId != null) formData.append("album_id", String(albumId));
+    return request(`/import/songs`, { method: "POST", body: formData });
+  },
 
   // Quick options
   listOptions: (kind) => request(`/options?kind=${kind}`),

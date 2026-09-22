@@ -1,5 +1,5 @@
 const DB_NAME = "music_journal";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 // Every store creation is guarded by objectStoreNames.contains(): this runs
 // for a brand new database (all stores get created) and for an upgrade of
@@ -54,6 +54,14 @@ function openDB() {
           autoIncrement: true,
         });
         rotation.createIndex("day", "day");
+      }
+
+      if (!db.objectStoreNames.contains("album_lineup")) {
+        const lineup = db.createObjectStore("album_lineup", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+        lineup.createIndex("album_id", "album_id");
       }
     };
     req.onsuccess = () => resolve(req.result);

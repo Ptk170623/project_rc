@@ -24,7 +24,6 @@ def add_trait(song_id: int, payload: schemas.SongTraitCreate, db: Session = Depe
     trait = models.SongTrait(
         song_id=song_id,
         text=payload.text.strip(),
-        sub_text=(payload.sub_text.strip() if payload.sub_text else None),
         position=(current_max or 0) + 1,
     )
     db.add(trait)
@@ -40,10 +39,14 @@ def update_trait(trait_id: int, payload: schemas.SongTraitUpdate, db: Session = 
         raise HTTPException(404, "Trait not found")
     if payload.text is not None:
         trait.text = payload.text.strip()
-    if payload.clear_sub_text:
-        trait.sub_text = None
-    elif payload.sub_text is not None:
-        trait.sub_text = payload.sub_text.strip()
+    if payload.clear_highlight:
+        trait.highlight = None
+    elif payload.highlight is not None:
+        trait.highlight = payload.highlight
+    if payload.clear_performer:
+        trait.performer = None
+    elif payload.performer is not None:
+        trait.performer = payload.performer.strip()
     db.commit()
     db.refresh(trait)
     return trait

@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import InlineAddForm from "../components/InlineAddForm.jsx";
 import SongCard from "../components/SongCard.jsx";
+import LineupEditor from "../components/LineupEditor.jsx";
+import { downloadImportTemplate } from "../importTemplate.js";
 
 export default function AlbumPage() {
   const { albumId } = useParams();
+  const navigate = useNavigate();
   const [album, setAlbum] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [showLineup, setShowLineup] = useState(false);
   const fileInputRef = useRef(null);
 
   const load = () =>
@@ -24,8 +28,12 @@ export default function AlbumPage() {
     if (!file) return;
     setBulkBusy(true);
     try {
-      await api.bulkCreateSongs(albumId, file);
-      load();
+      const result = await api.importSongs(file, Number(albumId));
+      if (String(result.album_id) !== albumId) {
+        navigate(`/albums/${result.album_id}`);
+      } else {
+        load();
+      }
     } finally {
       setBulkBusy(false);
     }
@@ -50,12 +58,18 @@ export default function AlbumPage() {
               load();
             }}
           />
+          <button className="btn btn-secondary" onClick={() => setShowLineup(true)}>
+            Lineup
+          </button>
           <button
             className="btn btn-secondary"
             disabled={bulkBusy}
             onClick={() => fileInputRef.current?.click()}
           >
             {bulkBusy ? "Importing…" : "Import list (.txt)"}
+          </button>
+          <button className="btn btn-ghost" onClick={downloadImportTemplate}>
+            Download template
           </button>
           <input
             ref={fileInputRef}
@@ -77,10 +91,19 @@ export default function AlbumPage() {
               song={song}
               bandName={album.band_name}
               albumName={album.name}
+              lineup={album.lineup}
               onRefresh={load}
             />
           ))}
         </div>
+      )}
+
+      {showLineup && (
+        <LineupEditor
+          album={album}
+          onClose={() => setShowLineup(false)}
+          onChanged={load}
+        />
       )}
     </div>
   );

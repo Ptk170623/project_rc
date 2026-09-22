@@ -4,7 +4,6 @@ import OptionsEditor from "./OptionsEditor.jsx";
 
 const EDITOR_TITLE = {
   trait: "Trait options",
-  subtrait: "Classification options",
 };
 
 export default function QuickPicker({ kind, title, onPick, onClose }) {

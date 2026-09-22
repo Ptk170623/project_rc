@@ -8,14 +8,11 @@ import {
   reqPut,
   withStore,
 } from "./db.js";
-import { DEFAULT_TRAIT_OPTIONS, DEFAULT_SUBTRAIT_OPTIONS } from "./defaultOptions.js";
+import { DEFAULT_TRAIT_OPTIONS } from "./defaultOptions.js";
 
 async function seedDefaultOptions() {
   await withStore("options", "readwrite", async (store) => {
-    for (const [kind, labels] of [
-      ["trait", DEFAULT_TRAIT_OPTIONS],
-      ["subtrait", DEFAULT_SUBTRAIT_OPTIONS],
-    ]) {
+    for (const [kind, labels] of [["trait", DEFAULT_TRAIT_OPTIONS]]) {
       const existing = await reqIndexAll(store, "kind", kind);
       if (existing.length) continue;
       for (let i = 0; i < labels.length; i++) {
@@ -35,6 +32,72 @@ function notFound(what) {
 
 function maxPosition(items) {
   return items.reduce((max, item) => Math.max(max, item.position || 0), 0);
+}
+
+// Mirrors the backend's plain-text import format: a bare list of song names
+// still works with zero markup; optional `Band:`/`Album:` header lines,
+// an optional `Lineup:` section (`Instrument: Performer` pairs upserted as
+// album defaults), an optional `Songs:` section, and per-song
+// `| Instrument: Name[, Instrument: Name]` override syntax.
+function parseImportFile(text) {
+  let bandName = null;
+  let albumName = null;
+  const lineup = [];
+  const songs = [];
+  let section = null;
+
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const lower = line.toLowerCase();
+
+    if (lower.startsWith("band:")) {
+      bandName = line.slice(line.indexOf(":") + 1).trim();
+      continue;
+    }
+    if (lower.startsWith("album:")) {
+      albumName = line.slice(line.indexOf(":") + 1).trim();
+      continue;
+    }
+    if (lower === "lineup:") {
+      section = "lineup";
+      continue;
+    }
+    if (lower === "songs:") {
+      section = "songs";
+      continue;
+    }
+
+    if (section === "lineup") {
+      if (line.includes(":")) {
+        const idx = line.indexOf(":");
+        const instrument = line.slice(0, idx).trim();
+        const performer = line.slice(idx + 1).trim();
+        if (instrument && performer) lineup.push([instrument, performer]);
+      }
+      continue;
+    }
+
+    if (line.includes("|")) {
+      const idx = line.indexOf("|");
+      const title = line.slice(0, idx).trim();
+      const rest = line.slice(idx + 1);
+      const overrides = [];
+      for (const part of rest.split(",")) {
+        if (part.includes(":")) {
+          const pIdx = part.indexOf(":");
+          const instrument = part.slice(0, pIdx).trim();
+          const name = part.slice(pIdx + 1).trim();
+          if (instrument && name) overrides.push([instrument, name]);
+        }
+      }
+      if (title) songs.push([title, overrides]);
+    } else if (line) {
+      songs.push([line, []]);
+    }
+  }
+
+  return { bandName, albumName, lineup, songs };
 }
 
 export const api = {
@@ -65,9 +128,9 @@ export const api = {
 
   deleteBand: (bandId) =>
     withStore(
-      ["bands", "albums", "songs", "traits", "rotation_slots"],
+      ["bands", "albums", "songs", "traits", "rotation_slots", "album_lineup"],
       "readwrite",
-      async ({ bands, albums, songs, traits, rotation_slots }) => {
+      async ({ bands, albums, songs, traits, rotation_slots, album_lineup }) => {
         const id = Number(bandId);
         const albumList = await reqIndexAll(albums, "band_id", id);
         for (const album of albumList) {
@@ -77,6 +140,8 @@ export const api = {
             for (const trait of traitList) await reqDelete(traits, trait.id);
             await reqDelete(songs, song.id);
           }
+          const lineupList = await reqIndexAll(album_lineup, "album_id", album.id);
+          for (const entry of lineupList) await reqDelete(album_lineup, entry.id);
           await reqDelete(albums, album.id);
         }
         const allSlots = await reqAll(rotation_slots);
@@ -97,9 +162,9 @@ export const api = {
 
   getAlbum: (albumId) =>
     withStore(
-      ["albums", "bands", "songs", "traits"],
+      ["albums", "bands", "songs", "traits", "album_lineup"],
       "readonly",
-      async ({ albums, bands, songs, traits }) => {
+      async ({ albums, bands, songs, traits, album_lineup }) => {
         const album = await reqGet(albums, Number(albumId));
         if (!album) throw notFound("Album");
         const band = await reqGet(bands, album.band_id);
@@ -110,15 +175,22 @@ export const api = {
           traitList.sort((a, b) => a.position - b.position);
           song.traits = traitList;
         }
-        return { ...album, band_name: band ? band.name : "", songs: songList };
+        const lineupList = await reqIndexAll(album_lineup, "album_id", Number(albumId));
+        lineupList.sort((a, b) => a.position - b.position);
+        return {
+          ...album,
+          band_name: band ? band.name : "",
+          songs: songList,
+          lineup: lineupList,
+        };
       }
     ),
 
   deleteAlbum: (albumId) =>
     withStore(
-      ["albums", "songs", "traits"],
+      ["albums", "songs", "traits", "album_lineup"],
       "readwrite",
-      async ({ albums, songs, traits }) => {
+      async ({ albums, songs, traits, album_lineup }) => {
         const id = Number(albumId);
         const songList = await reqIndexAll(songs, "album_id", id);
         for (const song of songList) {
@@ -126,6 +198,8 @@ export const api = {
           for (const trait of traitList) await reqDelete(traits, trait.id);
           await reqDelete(songs, song.id);
         }
+        const lineupList = await reqIndexAll(album_lineup, "album_id", id);
+        for (const entry of lineupList) await reqDelete(album_lineup, entry.id);
         await reqDelete(albums, id);
       }
     ),
@@ -143,37 +217,6 @@ export const api = {
       record.id = await reqAdd(store, record);
       return { ...record, traits: [] };
     }),
-
-  bulkCreateSongs: async (albumId, file) => {
-    const text = await file.text();
-    const names = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    return withStore("songs", "readwrite", async (store) => {
-      const existing = await reqIndexAll(store, "album_id", Number(albumId));
-      let position = maxPosition(existing) + 1;
-      const created = [];
-      const skipped = [];
-      for (const name of names) {
-        if (name.length > 300) {
-          skipped.push(name);
-          continue;
-        }
-        const record = {
-          album_id: Number(albumId),
-          name,
-          rating: null,
-          position,
-        };
-        record.id = await reqAdd(store, record);
-        position += 1;
-        created.push({ ...record, traits: [] });
-      }
-      return { created, skipped };
-    });
-  },
 
   updateSong: (songId, payload) =>
     withStore(["songs", "traits"], "readwrite", async ({ songs, traits }) => {
@@ -197,13 +240,14 @@ export const api = {
     }),
 
   // ---------- Traits ----------
-  addTrait: (songId, text, subText) =>
+  addTrait: (songId, text) =>
     withStore("traits", "readwrite", async (store) => {
       const existing = await reqIndexAll(store, "song_id", Number(songId));
       const record = {
         song_id: Number(songId),
         text,
-        sub_text: subText || null,
+        highlight: null,
+        performer: null,
         position: maxPosition(existing) + 1,
       };
       record.id = await reqAdd(store, record);
@@ -215,14 +259,143 @@ export const api = {
       const trait = await reqGet(store, Number(traitId));
       if (!trait) throw notFound("Trait");
       if (payload.text != null) trait.text = payload.text;
-      if (payload.clear_sub_text) trait.sub_text = null;
-      else if (payload.sub_text != null) trait.sub_text = payload.sub_text;
+      if (payload.clear_highlight) trait.highlight = null;
+      else if (payload.highlight != null) trait.highlight = payload.highlight;
+      if (payload.clear_performer) trait.performer = null;
+      else if (payload.performer != null) trait.performer = payload.performer;
       await reqPut(store, trait);
       return trait;
     }),
 
   deleteTrait: (traitId) =>
     withStore("traits", "readwrite", (store) => reqDelete(store, Number(traitId))),
+
+  // ---------- Album lineup ----------
+  addLineupEntry: (albumId, instrument, performer) =>
+    withStore("album_lineup", "readwrite", async (store) => {
+      const existing = await reqIndexAll(store, "album_id", Number(albumId));
+      const record = {
+        album_id: Number(albumId),
+        instrument,
+        performer,
+        position: maxPosition(existing) + 1,
+      };
+      record.id = await reqAdd(store, record);
+      return record;
+    }),
+
+  updateLineupEntry: (id, payload) =>
+    withStore("album_lineup", "readwrite", async (store) => {
+      const entry = await reqGet(store, Number(id));
+      if (!entry) throw notFound("Lineup entry");
+      if (payload.instrument != null) entry.instrument = payload.instrument;
+      if (payload.performer != null) entry.performer = payload.performer;
+      await reqPut(store, entry);
+      return entry;
+    }),
+
+  deleteLineupEntry: (id) =>
+    withStore("album_lineup", "readwrite", (store) => reqDelete(store, Number(id))),
+
+  // ---------- Bulk import ----------
+  // Client-side counterpart to the backend's /import/songs endpoint: parses
+  // the same plain-text format and writes bands/albums/lineup/songs/traits
+  // directly into IndexedDB.
+  importSongs: (file, albumId) =>
+    file.text().then((raw) =>
+      withStore(
+        ["bands", "albums", "album_lineup", "songs", "traits"],
+        "readwrite",
+        async ({ bands, albums, album_lineup, songs, traits }) => {
+          const { bandName, albumName, lineup, songs: parsedSongs } = parseImportFile(raw);
+
+          let band;
+          let album;
+          if (bandName && albumName) {
+            const allBands = await reqAll(bands);
+            band = allBands.find((b) => b.name.toLowerCase() === bandName.toLowerCase());
+            if (!band) {
+              band = { name: bandName };
+              band.id = await reqAdd(bands, band);
+            }
+            const bandAlbums = await reqIndexAll(albums, "band_id", band.id);
+            album = bandAlbums.find((a) => a.name.toLowerCase() === albumName.toLowerCase());
+            if (!album) {
+              album = { band_id: band.id, name: albumName };
+              album.id = await reqAdd(albums, album);
+            }
+          } else if (albumId != null) {
+            album = await reqGet(albums, Number(albumId));
+            if (!album) throw notFound("Album");
+            band = await reqGet(bands, album.band_id);
+          } else {
+            const err = new Error(
+              "The file needs Band: and Album: lines, or import it from inside an album."
+            );
+            err.status = 400;
+            throw err;
+          }
+
+          const existingLineup = await reqIndexAll(album_lineup, "album_id", album.id);
+          let lineupPosition = maxPosition(existingLineup);
+          for (const [instrument, performer] of lineup) {
+            const match = existingLineup.find(
+              (e) => e.instrument.toLowerCase() === instrument.toLowerCase()
+            );
+            if (match) {
+              match.performer = performer;
+              await reqPut(album_lineup, match);
+            } else {
+              lineupPosition += 1;
+              const entry = {
+                album_id: album.id,
+                instrument,
+                performer,
+                position: lineupPosition,
+              };
+              entry.id = await reqAdd(album_lineup, entry);
+              existingLineup.push(entry);
+            }
+          }
+
+          const existingSongs = await reqIndexAll(songs, "album_id", album.id);
+          let position = maxPosition(existingSongs) + 1;
+          let createdCount = 0;
+          const skipped = [];
+          for (const [title, overrides] of parsedSongs) {
+            if (title.length > 300) {
+              skipped.push(title);
+              continue;
+            }
+            const song = { album_id: album.id, name: title, rating: null, position };
+            song.id = await reqAdd(songs, song);
+            position += 1;
+            let i = 1;
+            for (const [instrument, performer] of overrides) {
+              await reqAdd(traits, {
+                song_id: song.id,
+                text: instrument,
+                highlight: null,
+                performer,
+                position: i,
+              });
+              i += 1;
+            }
+            createdCount += 1;
+          }
+
+          return {
+            band_id: band.id,
+            band_name: band.name,
+            album_id: album.id,
+            album_name: album.name,
+            created_count: createdCount,
+            skipped,
+            lineup_count: lineup.length,
+          };
+        }
+      )
+    ),
 
   // ---------- Quick options ----------
   listOptions: (kind) =>
@@ -281,9 +454,9 @@ export const api = {
   // ---------- Backup ----------
   exportAll: () =>
     withStore(
-      ["bands", "albums", "songs", "traits", "options", "rotation_slots"],
+      ["bands", "albums", "songs", "traits", "options", "rotation_slots", "album_lineup"],
       "readonly",
-      async ({ bands, albums, songs, traits, options, rotation_slots }) => ({
+      async ({ bands, albums, songs, traits, options, rotation_slots, album_lineup }) => ({
         version: 1,
         exported_at: new Date().toISOString(),
         bands: await reqAll(bands),
@@ -292,15 +465,16 @@ export const api = {
         traits: await reqAll(traits),
         options: await reqAll(options),
         rotation_slots: await reqAll(rotation_slots),
+        album_lineup: await reqAll(album_lineup),
       })
     ),
 
   importAll: (data) =>
     withStore(
-      ["bands", "albums", "songs", "traits", "options", "rotation_slots"],
+      ["bands", "albums", "songs", "traits", "options", "rotation_slots", "album_lineup"],
       "readwrite",
-      async ({ bands, albums, songs, traits, options, rotation_slots }) => {
-        for (const store of [bands, albums, songs, traits, options, rotation_slots]) {
+      async ({ bands, albums, songs, traits, options, rotation_slots, album_lineup }) => {
+        for (const store of [bands, albums, songs, traits, options, rotation_slots, album_lineup]) {
           const keys = await new Promise((resolve, reject) => {
             const req = store.getAllKeys();
             req.onsuccess = () => resolve(req.result);
@@ -314,6 +488,7 @@ export const api = {
         for (const record of data.traits || []) await reqPut(traits, record);
         for (const record of data.options || []) await reqPut(options, record);
         for (const record of data.rotation_slots || []) await reqPut(rotation_slots, record);
+        for (const record of data.album_lineup || []) await reqPut(album_lineup, record);
       }
     ),
 };

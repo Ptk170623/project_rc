@@ -13,6 +13,7 @@ from .database import Base
 
 RATING_VALUES = ("C", "B", "G", "A", "S")
 OPTION_KINDS = ("trait", "subtrait")
+HIGHLIGHT_VALUES = ("strong", "less")
 ROTATION_DAYS = (
     "monday",
     "tuesday",
@@ -51,6 +52,11 @@ class Album(Base):
     songs: Mapped[list["Song"]] = relationship(
         back_populates="album", cascade="all, delete-orphan", order_by="Song.position"
     )
+    lineup: Mapped[list["AlbumLineup"]] = relationship(
+        back_populates="album",
+        cascade="all, delete-orphan",
+        order_by="AlbumLineup.position",
+    )
 
 
 class Song(Base):
@@ -76,11 +82,19 @@ class Song(Base):
 
 class SongTrait(Base):
     __tablename__ = "song_traits"
+    __table_args__ = (
+        CheckConstraint(f"highlight IN {HIGHLIGHT_VALUES}", name="ck_trait_highlight"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     song_id: Mapped[int] = mapped_column(ForeignKey("songs.id"), nullable=False)
     text: Mapped[str] = mapped_column(String(200), nullable=False)
+    # Legacy free-text classification (e.g. "Great"/"Strong"/"Low"), superseded
+    # by `highlight` below. Kept only so pre-existing rows aren't dropped;
+    # nothing in the app writes or reads it anymore.
     sub_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    highlight: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    performer: Mapped[str | None] = mapped_column(String(200), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -117,3 +131,18 @@ class RotationSlot(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     band: Mapped["Band"] = relationship(back_populates="rotation_slots")
+
+
+class AlbumLineup(Base):
+    """Default performer per instrument for an album; a song's own trait
+    `performer` overrides this when set."""
+
+    __tablename__ = "album_lineup"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    album_id: Mapped[int] = mapped_column(ForeignKey("albums.id"), nullable=False)
+    instrument: Mapped[str] = mapped_column(String(100), nullable=False)
+    performer: Mapped[str] = mapped_column(String(200), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+    album: Mapped["Album"] = relationship(back_populates="lineup")

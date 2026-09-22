@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 Rating = Literal["C", "B", "G", "A", "S"]
 OptionKind = Literal["trait", "subtrait"]
+Highlight = Literal["strong", "less"]
 RotationDay = Literal[
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "others"
 ]
@@ -13,13 +14,14 @@ RotationDay = Literal[
 # ---------- SongTrait ----------
 class SongTraitCreate(BaseModel):
     text: str = Field(min_length=1, max_length=200)
-    sub_text: Optional[str] = Field(default=None, max_length=200)
 
 
 class SongTraitUpdate(BaseModel):
     text: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    sub_text: Optional[str] = Field(default=None, max_length=200)
-    clear_sub_text: bool = False
+    highlight: Optional[Highlight] = None
+    clear_highlight: bool = False
+    performer: Optional[str] = Field(default=None, max_length=200)
+    clear_performer: bool = False
 
 
 class SongTraitRead(BaseModel):
@@ -28,7 +30,8 @@ class SongTraitRead(BaseModel):
     id: int
     song_id: int
     text: str
-    sub_text: Optional[str]
+    highlight: Optional[str]
+    performer: Optional[str]
     position: int
 
 
@@ -54,11 +57,6 @@ class SongRead(BaseModel):
     traits: list[SongTraitRead] = []
 
 
-class BulkSongsResult(BaseModel):
-    created: list[SongRead]
-    skipped: list[str]
-
-
 # ---------- Album ----------
 class AlbumCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
@@ -72,9 +70,42 @@ class AlbumRead(BaseModel):
     name: str
 
 
+# ---------- AlbumLineup ----------
+class AlbumLineupCreate(BaseModel):
+    instrument: str = Field(min_length=1, max_length=100)
+    performer: str = Field(min_length=1, max_length=200)
+
+
+class AlbumLineupUpdate(BaseModel):
+    instrument: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    performer: Optional[str] = Field(default=None, min_length=1, max_length=200)
+
+
+class AlbumLineupRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    album_id: int
+    instrument: str
+    performer: str
+    position: int
+
+
 class AlbumDetail(AlbumRead):
     band_name: str
     songs: list[SongRead] = []
+    lineup: list[AlbumLineupRead] = []
+
+
+# ---------- Import ----------
+class ImportResult(BaseModel):
+    band_id: int
+    band_name: str
+    album_id: int
+    album_name: str
+    created_count: int
+    skipped: list[str]
+    lineup_count: int
 
 
 # ---------- Band ----------

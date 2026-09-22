@@ -30,6 +30,7 @@ def get_album(album_id: int, db: Session = Depends(get_db)):
         name=album.name,
         band_name=album.band.name,
         songs=album.songs,
+        lineup=album.lineup,
     )
 
 

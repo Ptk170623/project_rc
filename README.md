@@ -4,8 +4,9 @@ A personal app for actively listening to and keeping track of music,
 organized into sections:
 
 - **Ratings** — bands → albums → songs, with a rating (Meh / Good / Great
-  / Amazing / Legendary) and "traits" (quick notes) that can each carry
-  their own classification.
+  / Amazing / Legendary) and "traits" (quick notes, e.g. instruments) that
+  can each be marked Strong/Less and tagged with who performed it, with a
+  per-album default lineup you can override per song.
 - **Weekly Rotation** — up to 6 bands per weekday whose discography you're
   currently working through, plus an Others catch-all for anything not
   tied to a specific day.
@@ -135,13 +136,12 @@ uninstalling the app, or switching phones wipes it), the app has
 restore everything to a `.json` file. Worth exporting every once in a
 while.
 
-If you already installed the app before its default trait/classification
-options changed, those defaults won't retroactively update on your
-device — code updates apply automatically, but seed data only gets
-written once, into an empty store. Open **Edit options list** on either
-picker → **Reset to defaults** to replace your current list with the
-built-in one (this doesn't touch traits already added to songs, only the
-quick-pick list).
+If you already installed the app before its default trait options
+changed, those defaults won't retroactively update on your device — code
+updates apply automatically, but seed data only gets written once, into
+an empty store. Open **Edit options list** on the trait picker → **Reset
+to defaults** to replace your current list with the built-in one (this
+doesn't touch traits already added to songs, only the quick-pick list).
 
 ## Features
 
@@ -152,23 +152,41 @@ The home screen is a picker between the two sections below.
 ### Ratings
 
 - Add a band → inside the band, add an album → inside the album, add a
-  song.
-- Bulk-import songs from a `.txt` file (one song per line).
+  song. Bands, albums, and songs can each be deleted (cascades to
+  whatever they contain).
 - Each song shows up as a "banner" (a rectangle with rounded ends)
   displaying: the band and album in a small font at the top; the song name
   in a large font below it; and a colored pill with the rating (Meh, Good,
   Great, Amazing, or Legendary — click to choose) on the right.
-- Clicking a song expands a panel to manage its "traits":
+- Clicking a song expands a panel to manage its "traits" (instruments or
+  other things worth noting about that song):
   - The **+** button opens a quick list of options (editable) or lets you
     type free text. It stays open after each pick, so you can add several
     traits in a row without reopening it.
-  - Added traits show up at the top of the banner, side by side.
-  - Clicking a trait lets you add a "classification" to it (also free
-    text or an editable quick list), shown above the trait, same font
-    size, different color.
-- The quick-option lists (traits and classifications) have their own
-  editor to add, rename, or remove items — plus a **Reset to defaults**
-  button to restore the built-in list.
+  - Added traits show up at the top of the banner as pill-shaped outlines,
+    tinted with the song's own rating color.
+  - Clicking a trait opens an editor where you can:
+    - Mark it **Strong** or **Less** — the outline (and a soft glow behind
+      it) shifts to the color of the rating tier just above or below the
+      song's own, so a "strong" trait on a Great song glows Amazing-purple
+      and a "less" one glows Good-blue. Toggling it off returns to the
+      song's own tier color.
+    - Set who played/performed it. If the album has a **Lineup** (see
+      below) with a matching instrument, that name shows automatically;
+      typing a name here overrides it just for this song, and **Reset to
+      album default** clears the override.
+- **Lineup** (button on the album page) lets you define the default
+  performer for each instrument across the whole album (e.g. "Guitar →
+  Jonny Greenwood") — add, rename, or remove entries. Any song's trait
+  matching that instrument name shows this performer unless overridden.
+- **Import list (.txt)** bulk-adds songs from a text file. The simplest
+  form is still just one song name per line. Optionally, the file can also
+  set the band/album to import into and define the lineup and per-song
+  performer overrides — see **Download template** on the album page for
+  the exact syntax with examples.
+- The quick trait-option list has its own editor to add, rename, or
+  remove items — plus a **Reset to defaults** button to restore the
+  built-in list.
 
 ### Weekly Rotation
 

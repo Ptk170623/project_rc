@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .database import Base, SessionLocal, engine
-from .routers import albums, bands, options, rotation, songs, traits
+from .routers import albums, bands, imports, lineup, options, rotation, songs, traits
 
 DEFAULT_TRAIT_OPTIONS = [
     "Vocal",
@@ -17,26 +17,17 @@ DEFAULT_TRAIT_OPTIONS = [
     "Guitar solo",
 ]
 
-DEFAULT_SUBTRAIT_OPTIONS = ["Great", "Strong", "Low"]
-
 
 def _seed_default_options() -> None:
     db = SessionLocal()
     try:
-        for kind, labels in (
-            ("trait", DEFAULT_TRAIT_OPTIONS),
-            ("subtrait", DEFAULT_SUBTRAIT_OPTIONS),
-        ):
-            existing = (
-                db.query(models.QuickOption)
-                .filter(models.QuickOption.kind == kind)
-                .count()
-            )
-            if existing:
-                continue
-            for i, label in enumerate(labels, start=1):
-                db.add(models.QuickOption(kind=kind, label=label, position=i))
-        db.commit()
+        existing = (
+            db.query(models.QuickOption).filter(models.QuickOption.kind == "trait").count()
+        )
+        if not existing:
+            for i, label in enumerate(DEFAULT_TRAIT_OPTIONS, start=1):
+                db.add(models.QuickOption(kind="trait", label=label, position=i))
+            db.commit()
     finally:
         db.close()
 
@@ -63,6 +54,8 @@ def create_app() -> FastAPI:
     app.include_router(traits.router)
     app.include_router(options.router)
     app.include_router(rotation.router)
+    app.include_router(lineup.router)
+    app.include_router(imports.router)
 
     @app.get("/health")
     def health():

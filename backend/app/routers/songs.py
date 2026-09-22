@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -31,41 +31,6 @@ def create_song(album_id: int, payload: schemas.SongCreate, db: Session = Depend
     db.commit()
     db.refresh(song)
     return song
-
-
-@router.post(
-    "/albums/{album_id}/songs/bulk",
-    response_model=schemas.BulkSongsResult,
-    status_code=201,
-)
-async def bulk_create_songs(
-    album_id: int, file: UploadFile, db: Session = Depends(get_db)
-):
-    album = db.get(models.Album, album_id)
-    if not album:
-        raise HTTPException(404, "Album not found")
-
-    raw = (await file.read()).decode("utf-8", errors="ignore")
-    lines = [line.strip() for line in raw.splitlines()]
-    names = [line for line in lines if line]
-
-    created = []
-    skipped = []
-    position = _next_position(db, album_id)
-    for name in names:
-        if len(name) > 300:
-            skipped.append(name)
-            continue
-        song = models.Song(album_id=album_id, name=name, position=position)
-        db.add(song)
-        position += 1
-        created.append(song)
-
-    db.commit()
-    for song in created:
-        db.refresh(song)
-
-    return schemas.BulkSongsResult(created=created, skipped=skipped)
 
 
 @router.get("/albums/{album_id}/songs", response_model=list[schemas.SongRead])
