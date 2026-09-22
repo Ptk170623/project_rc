@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
-RATING_VALUES = ("C", "B", "G", "A", "S")
+RATING_VALUES = ("C", "B", "G", "A", "S", "M", "L")
 OPTION_KINDS = ("trait", "subtrait")
 HIGHLIGHT_VALUES = ("strong", "less")
 ROTATION_DAYS = (
