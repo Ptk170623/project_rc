@@ -10,8 +10,8 @@ export const RATING_TIERS = [
   { code: "G", label: "Great", color: "#6366f1", text: "#ffffff" },
   { code: "B", label: "Good", color: "#4a90d9", text: "#ffffff" },
   { code: "C", label: "Meh", color: "#9aa0a6", text: "#14161b" },
-  { code: "M", label: "Like So Much", color: "#7c8591", text: "#ffffff" },
-  { code: "L", label: "Like", color: "#5f6672", text: "#ffffff" },
+  { code: "M", label: "Like So Much", color: "#ec6f9b", text: "#ffffff" },
+  { code: "L", label: "Like", color: "#f2a6c4", text: "#14161b" },
 ];
 
 export const TIERS_BY_CODE = Object.fromEntries(
