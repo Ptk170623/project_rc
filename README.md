@@ -227,8 +227,11 @@ The home screen is a picker between the two sections below.
 ### All Songs
 
 - Every song from every band and album, flattened into one list (same
-  banner style as an album page), grouped by band then album so it reads
-  like flipping through your whole library in order.
+  banner style as an album page).
+- Sorted by **highest rating first** by default — a dropdown next to the
+  lock button switches to lowest rating first, band/album order (grouped,
+  like flipping through your library in order), or name (A–Z). Unrated
+  songs always sit at the bottom, in either rating direction.
 - Opens **locked** by default — you can expand a song to see its rating
   and traits, but rating, adding/removing traits, and deleting the song
   are all disabled. Tap **Locked — tap to edit** to unlock editing (the

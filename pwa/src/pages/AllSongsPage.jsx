@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api.js";
 import SongCard from "../components/SongCard.jsx";
+import { SORT_OPTIONS, sortSongs } from "../songSort.js";
 
 export default function AllSongsPage() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editable, setEditable] = useState(false);
+  const [sortMode, setSortMode] = useState("rating-desc");
 
   const load = () =>
     api.listAllSongs().then(setSongs).finally(() => setLoading(false));
@@ -15,6 +17,8 @@ export default function AllSongsPage() {
     load();
   }, []);
 
+  const sortedSongs = useMemo(() => sortSongs(songs, sortMode), [songs, sortMode]);
+
   return (
     <div>
       <Link to="/" className="breadcrumb">
@@ -22,22 +26,36 @@ export default function AllSongsPage() {
       </Link>
       <div className="page-header">
         <h1>All Songs</h1>
-        <button
-          type="button"
-          className={`btn ${editable ? "btn-danger" : "btn-secondary"}`}
-          onClick={() => setEditable((v) => !v)}
-        >
-          {editable ? "Editing on — tap to lock" : "Locked — tap to edit"}
-        </button>
+        <div className="page-header-actions">
+          <select
+            className="sort-select"
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value)}
+            aria-label="Sort songs by"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className={`btn ${editable ? "btn-danger" : "btn-secondary"}`}
+            onClick={() => setEditable((v) => !v)}
+          >
+            {editable ? "Editing on — tap to lock" : "Locked — tap to edit"}
+          </button>
+        </div>
       </div>
 
       {loading ? (
         <p className="empty-hint">Loading…</p>
-      ) : songs.length === 0 ? (
+      ) : sortedSongs.length === 0 ? (
         <p className="empty-hint">No songs added yet.</p>
       ) : (
         <div className="song-list">
-          {songs.map((song) => (
+          {sortedSongs.map((song) => (
             <SongCard
               key={song.id}
               song={song}
