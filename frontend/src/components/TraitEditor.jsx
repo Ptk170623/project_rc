@@ -29,14 +29,6 @@ export default function TraitEditor({ trait, defaultPerformer, onSave, onClose }
     onSave({ clear_performer: true });
   };
 
-  const toggleHighlight = (value) => {
-    if (trait.highlight === value) {
-      onSave({ clear_highlight: true });
-    } else {
-      onSave({ highlight: value });
-    }
-  };
-
   return (
     <form className="trait-editor" ref={wrapRef} onSubmit={savePerformer}>
       <div className="trait-editor-label">Performer</div>
@@ -57,22 +49,6 @@ export default function TraitEditor({ trait, defaultPerformer, onSave, onClose }
         </button>
         <button type="button" className="btn btn-small btn-ghost" onClick={onClose}>
           Close
-        </button>
-      </div>
-      <div className="trait-editor-toggle-row">
-        <button
-          type="button"
-          className={`toggle-btn strong ${trait.highlight === "strong" ? "active" : ""}`}
-          onClick={() => toggleHighlight("strong")}
-        >
-          Strong
-        </button>
-        <button
-          type="button"
-          className={`toggle-btn less ${trait.highlight === "less" ? "active" : ""}`}
-          onClick={() => toggleHighlight("less")}
-        >
-          Less
         </button>
       </div>
     </form>

@@ -37,6 +37,7 @@ def list_all_songs(db: Session = Depends(get_db)):
             band_id=song.album.band_id,
             band_name=song.album.band.name,
             album_name=song.album.name,
+            album_rating=song.album.rating,
             lineup=song.album.lineup,
         )
         for song in songs

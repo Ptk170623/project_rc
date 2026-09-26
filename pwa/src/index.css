@@ -96,6 +96,13 @@ body {
   font-size: 28px;
 }
 
+.page-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .page-header-actions {
   display: flex;
   gap: 10px;
@@ -426,6 +433,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   cursor: pointer;
   padding: 6px 0;
@@ -475,10 +483,6 @@ body {
   display: flex;
   gap: 6px;
 }
-.trait-editor-toggle-row {
-  display: flex;
-  gap: 8px;
-}
 .toggle-btn {
   flex: 1;
   padding: 8px;
@@ -502,6 +506,19 @@ body {
   border-color: var(--less);
   color: var(--less);
   background: color-mix(in srgb, var(--less) 15%, transparent);
+}
+.toggle-btn.inline {
+  flex: none;
+  padding: 5px 10px;
+  font-size: 10px;
+}
+
+.trait-detail-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* Album lineup */

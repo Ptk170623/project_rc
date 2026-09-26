@@ -40,6 +40,11 @@ export const api = {
       body: JSON.stringify({ name }),
     }),
   getAlbum: (albumId) => request(`/albums/${albumId}`),
+  updateAlbum: (albumId, payload) =>
+    request(`/albums/${albumId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
   deleteAlbum: (albumId) => request(`/albums/${albumId}`, { method: "DELETE" }),
 
   // Songs

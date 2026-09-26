@@ -16,8 +16,9 @@ function byLibraryOrder(a, b) {
   return a.position - b.position;
 }
 
-// Unrated songs always sort last, in either rating direction — there's no
-// tier to rank them by, and burying them at the bottom (rather than
+// Ranks by the song's *album* rating — songs don't carry their own rating
+// anymore. Unrated albums always sort last, in either direction — there's
+// no tier to rank them by, and burying them at the bottom (rather than
 // flipping to the top for "lowest first") keeps the list predictable.
 export function sortSongs(songs, mode) {
   const copy = [...songs];
@@ -29,8 +30,8 @@ export function sortSongs(songs, mode) {
   }
   const direction = mode === "rating-asc" ? -1 : 1;
   return copy.sort((a, b) => {
-    const ra = a.rating ? RANK_BY_CODE[a.rating] : null;
-    const rb = b.rating ? RANK_BY_CODE[b.rating] : null;
+    const ra = a.album_rating ? RANK_BY_CODE[a.album_rating] : null;
+    const rb = b.album_rating ? RANK_BY_CODE[b.album_rating] : null;
     if (ra === null && rb === null) return byLibraryOrder(a, b);
     if (ra === null) return 1;
     if (rb === null) return -1;

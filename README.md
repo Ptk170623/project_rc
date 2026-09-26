@@ -4,10 +4,11 @@ A personal app for actively listening to and keeping track of music,
 organized into sections:
 
 - **Ratings** — bands → albums → songs, with a rating (Like / Like So Much
-  / Meh / Good / Great / Amazing / Extraordinary / Legendary) and "traits"
-  (quick notes, e.g. instruments) that can each be marked Strong/Less and
-  tagged with who performed it, with a per-album default lineup you can
-  override per song.
+  / Meh / Good / Great / Amazing / Extraordinary / Legendary) set once per
+  album — every song in it inherits that rating — and "traits" (quick
+  notes, e.g. instruments) that can each be marked Strong/Less relative to
+  the album's rating, inline with one tap, and tagged with who performed
+  it via a per-album default lineup you can override per song.
 - **Weekly Rotation** — up to 6 bands per weekday whose discography you're
   currently working through, plus an Others catch-all for anything not
   tied to a specific day.
@@ -164,31 +165,38 @@ The home screen is a picker between the two sections below.
 - Add a band → inside the band, add an album → inside the album, add a
   song. Bands, albums, and songs can each be deleted (cascades to
   whatever they contain).
+- **The rating lives on the album, not the song.** Rating every song
+  individually didn't scale, so there's one rating pill next to the album
+  title, and every song in it just shows that same rating — set it once
+  and you're done with that album. From best to worst: Legendary,
+  Extraordinary, Amazing, Great, Good, Meh — and below those, **Like**/
+  **Like So Much**, which aren't a lower quality judgment, they're for an
+  album you haven't listened to enough times yet to give a real rating,
+  just a first impression.
 - Each song shows up as a "banner" (a rectangle with rounded ends)
   displaying: the band and album in a small font at the top; the song name
-  in a large font below it; and a colored pill with the rating (click to
-  choose) on the right. From best to worst: Legendary, Extraordinary,
-  Amazing, Great, Good, Meh — and below those, **Like**/**Like So Much**,
-  which aren't a lower quality judgment, they're for a song you haven't
-  listened to enough times yet to give a real rating, just a first
-  impression.
+  in a large font below it; and the album's rating pill on the right
+  (read-only here — change it on the album, not the song).
 - Clicking a song expands a panel to manage its "traits" (instruments or
   other things worth noting about that song):
   - The **+** button opens a quick list of options (editable) or lets you
     type free text. It stays open after each pick, so you can add several
     traits in a row without reopening it.
   - Added traits show up at the top of the banner as pill-shaped outlines,
-    tinted with the song's own rating color.
-  - Clicking a trait opens an editor where you can:
-    - Mark it **Strong** or **Less** — the outline (and a soft glow behind
-      it) shifts to the color of the rating tier just above or below the
-      song's own, so a "strong" trait on a Great song glows Amazing-purple
-      and a "less" one glows Good-blue. Toggling it off returns to the
-      song's own tier color.
-    - Set who played/performed it. If the album has a **Lineup** (see
-      below) with a matching instrument, that name shows automatically;
-      typing a name here overrides it just for this song, and **Reset to
-      album default** clears the override.
+    tinted with the album's rating color.
+  - Each trait row has its own **Strong** / **Less** buttons right there —
+    no popup, one tap. The outline (and a soft glow behind it) shifts to
+    the color of the tier just above or below the album's, so a "strong"
+    trait on a Great album glows Amazing-purple and a "less" one glows
+    Good-blue. Tapping the same button again clears it back to the
+    album's own tier color. This is the only per-song adjustment there
+    is — pick out what stood out (or didn't) trait by trait instead of
+    re-rating every song.
+  - Clicking the trait itself (not the Strong/Less buttons) opens a small
+    editor to set who played/performed it. If the album has a **Lineup**
+    (see below) with a matching instrument, that name shows automatically;
+    typing a name here overrides it just for this song, and **Reset to
+    album default** clears the override.
 - **Lineup** (button on the album page) lets you define the default
   performer for each instrument across the whole album (e.g. "Guitar →
   Jonny Greenwood") — add, rename, or remove entries. Any song's trait
@@ -227,13 +235,16 @@ The home screen is a picker between the two sections below.
 ### All Songs
 
 - Every song from every band and album, flattened into one list (same
-  banner style as an album page).
+  banner style as an album page). The rating pill shown per song is
+  always its album's rating — read-only here, same as on the album page;
+  change it on the album itself.
 - Sorted by **highest rating first** by default — a dropdown next to the
   lock button switches to lowest rating first, band/album order (grouped,
-  like flipping through your library in order), or name (A–Z). Unrated
-  songs always sit at the bottom, in either rating direction.
-- Opens **locked** by default — you can expand a song to see its rating
-  and traits, but rating, adding/removing traits, and deleting the song
+  like flipping through your library in order), or name (A–Z). Songs
+  whose album isn't rated yet always sit at the bottom, in either rating
+  direction.
+- Opens **locked** by default — you can expand a song to see its traits,
+  but adding/removing traits, marking Strong/Less, and deleting the song
   are all disabled. Tap **Locked — tap to edit** to unlock editing (the
   button turns red and reads **Editing on — tap to lock**); tap it again
   to lock back up. The lock resets to on every time you open the page, so

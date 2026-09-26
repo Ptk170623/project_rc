@@ -42,10 +42,18 @@ class Band(Base):
 
 class Album(Base):
     __tablename__ = "albums"
+    __table_args__ = (
+        CheckConstraint(f"rating IN {RATING_VALUES}", name="ck_album_rating"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     band_id: Mapped[int] = mapped_column(ForeignKey("bands.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    # The rating lives on the album, not per song: rating every song
+    # individually didn't scale, so a song's effective tier is just its
+    # album's rating, with an optional Strong/Less nudge on a *trait*
+    # (not the song) for anything that stood out either way.
+    rating: Mapped[str | None] = mapped_column(String(1), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     band: Mapped["Band"] = relationship(back_populates="albums")

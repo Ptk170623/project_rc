@@ -5,15 +5,13 @@ import QuickPicker from "./QuickPicker.jsx";
 import TraitEditor from "./TraitEditor.jsx";
 import { effectivePerformer, tierColorFor } from "../traitColor.js";
 
-export default function SongCard({ song, bandName, albumName, lineup, onRefresh, editable = true }) {
+// The rating lives on the album (see AlbumPage), not per song: a song's
+// effective tier is just its album's rating. A trait's own Strong/Less is
+// the only per-song nudge, picked inline in its row (no popup needed).
+export default function SongCard({ song, bandName, albumName, albumRating, lineup, onRefresh, editable = true }) {
   const [expanded, setExpanded] = useState(false);
   const [showAddTrait, setShowAddTrait] = useState(false);
   const [editingTraitId, setEditingTraitId] = useState(null);
-
-  const changeRating = async (rating) => {
-    await api.updateSong(song.id, rating ? { rating } : { clear_rating: true });
-    onRefresh();
-  };
 
   const addTrait = async (text) => {
     await api.addTrait(song.id, text);
@@ -26,6 +24,11 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh,
     onRefresh();
   };
 
+  const toggleHighlight = (trait, value, e) => {
+    e.stopPropagation();
+    saveTrait(trait.id, trait.highlight === value ? { clear_highlight: true } : { highlight: value });
+  };
+
   const removeTrait = async (traitId, e) => {
     e.stopPropagation();
     await api.deleteTrait(traitId);
@@ -33,7 +36,7 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh,
   };
 
   const removeSong = async () => {
-    if (!window.confirm(`Delete "${song.name}"? This also deletes its traits and rating.`)) {
+    if (!window.confirm(`Delete "${song.name}"? This also deletes its traits.`)) {
       return;
     }
     await api.deleteSong(song.id);
@@ -41,7 +44,7 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh,
   };
 
   const renderChip = (t) => {
-    const tier = tierColorFor(song.rating, t.highlight);
+    const tier = tierColorFor(albumRating, t.highlight);
     const performer = effectivePerformer(t, lineup);
     const style = tier ? { "--trait-color": tier.color } : undefined;
     return (
@@ -67,7 +70,7 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh,
         </div>
         <div className="song-pill-main">
           <span className="song-name">{song.name}</span>
-          <RatingBadge rating={song.rating} onChange={changeRating} editable={editable} />
+          <RatingBadge rating={albumRating} editable={false} />
         </div>
       </div>
 
@@ -108,12 +111,28 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh,
                   >
                     {renderChip(t)}
                     {editable && (
-                      <button
-                        className="btn btn-small btn-danger"
-                        onClick={(e) => removeTrait(t.id, e)}
-                      >
-                        Remove
-                      </button>
+                      <div className="trait-detail-controls">
+                        <button
+                          type="button"
+                          className={`toggle-btn strong inline ${t.highlight === "strong" ? "active" : ""}`}
+                          onClick={(e) => toggleHighlight(t, "strong", e)}
+                        >
+                          Strong
+                        </button>
+                        <button
+                          type="button"
+                          className={`toggle-btn less inline ${t.highlight === "less" ? "active" : ""}`}
+                          onClick={(e) => toggleHighlight(t, "less", e)}
+                        >
+                          Less
+                        </button>
+                        <button
+                          className="btn btn-small btn-danger"
+                          onClick={(e) => removeTrait(t.id, e)}
+                        >
+                          Remove
+                        </button>
+                      </div>
                     )}
                   </div>
                   {editable && editingTraitId === t.id && (

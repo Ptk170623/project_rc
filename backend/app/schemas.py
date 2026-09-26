@@ -62,12 +62,19 @@ class AlbumCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
 
 
+class AlbumUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    rating: Optional[Rating] = None
+    clear_rating: bool = False
+
+
 class AlbumRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     band_id: int
     name: str
+    rating: Optional[str] = None
 
 
 # ---------- AlbumLineup ----------
@@ -102,6 +109,7 @@ class SongWithContext(SongRead):
     band_id: int
     band_name: str
     album_name: str
+    album_rating: Optional[str] = None
     lineup: list[AlbumLineupRead] = []
 
 
@@ -136,6 +144,7 @@ class LineupExport(BaseModel):
 
 class AlbumExport(BaseModel):
     name: str
+    rating: Optional[Rating] = None
     lineup: list[LineupExport] = []
     songs: list[SongExport] = []
 

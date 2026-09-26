@@ -57,6 +57,7 @@ async function exportAlbumData(album, { songs, traits, album_lineup }) {
   lineupList.sort((a, b) => a.position - b.position);
   return {
     name: album.name,
+    rating: album.rating || null,
     lineup: lineupList.map((e) => ({ instrument: e.instrument, performer: e.performer })),
     songs: songExports,
   };
@@ -205,9 +206,20 @@ export const api = {
   // ---------- Albums ----------
   createAlbum: (bandId, name) =>
     withStore("albums", "readwrite", async (store) => {
-      const record = { band_id: Number(bandId), name };
+      const record = { band_id: Number(bandId), name, rating: null };
       record.id = await reqAdd(store, record);
       return record;
+    }),
+
+  updateAlbum: (albumId, payload) =>
+    withStore("albums", "readwrite", async (store) => {
+      const album = await reqGet(store, Number(albumId));
+      if (!album) throw notFound("Album");
+      if (payload.name != null) album.name = payload.name;
+      if (payload.clear_rating) album.rating = null;
+      else if (payload.rating != null) album.rating = payload.rating;
+      await reqPut(store, album);
+      return album;
     }),
 
   getAlbum: (albumId) =>
@@ -301,6 +313,7 @@ export const api = {
             band_id: album ? album.band_id : null,
             band_name: band ? band.name : "",
             album_name: album ? album.name : "",
+            album_rating: album ? album.rating : null,
             lineup: lineupList,
           });
         }
@@ -566,10 +579,14 @@ export const api = {
               (a) => a.name.toLowerCase() === albumData.name.toLowerCase()
             );
             if (!album) {
-              album = { band_id: band.id, name: albumData.name };
+              album = { band_id: band.id, name: albumData.name, rating: null };
               album.id = await reqAdd(albums, album);
             }
             if (isSingleAlbum) resultAlbumId = album.id;
+            if (albumData.rating && !album.rating) {
+              album.rating = albumData.rating;
+              await reqPut(albums, album);
+            }
 
             const existingLineup = await reqIndexAll(album_lineup, "album_id", album.id);
             let lineupPosition = maxPosition(existingLineup);

@@ -229,6 +229,8 @@ async def import_data(file: UploadFile, db: Session = Depends(get_db)):
         album = _find_or_create_album(db, band.id, album_data["name"])
         if is_single_album:
             result_album_id = album.id
+        if album_data.get("rating") and not album.rating:
+            album.rating = album_data["rating"]
 
         lineup_position = (
             db.query(func.max(models.AlbumLineup.position))

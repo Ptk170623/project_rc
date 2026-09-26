@@ -57,6 +57,40 @@ def _finish_song_rating_migration() -> None:
         conn.commit()
 
 
+def _start_album_rating_migration() -> bool:
+    """Same idea as `_start_song_rating_migration`, but for a column that
+    didn't exist at all on an older `albums` table (rating now lives on
+    the album, not per song). SQLite can't ALTER TABLE in a CHECK
+    constraint after the fact, so this rebuilds the table when needed;
+    pair with `_finish_album_rating_migration` to copy the old rows back
+    in (rating defaults to NULL for them, same as if never rated)."""
+    inspector = inspect(engine)
+    if "albums" not in inspector.get_table_names():
+        return False
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT sql FROM sqlite_master WHERE type='table' AND name='albums'")
+        ).fetchone()
+        current_sql = row[0] if row else ""
+        if "rating" in current_sql:
+            return False  # already migrated
+        conn.execute(text("ALTER TABLE albums RENAME TO albums_pre_migration"))
+        conn.commit()
+    return True
+
+
+def _finish_album_rating_migration() -> None:
+    with engine.connect() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO albums (id, band_id, name, created_at) "
+                "SELECT id, band_id, name, created_at FROM albums_pre_migration"
+            )
+        )
+        conn.execute(text("DROP TABLE albums_pre_migration"))
+        conn.commit()
+
+
 def _seed_default_options() -> None:
     db = SessionLocal()
     try:
@@ -73,9 +107,12 @@ def _seed_default_options() -> None:
 
 def create_app() -> FastAPI:
     needs_rating_migration = _start_song_rating_migration()
+    needs_album_rating_migration = _start_album_rating_migration()
     Base.metadata.create_all(bind=engine)
     if needs_rating_migration:
         _finish_song_rating_migration()
+    if needs_album_rating_migration:
+        _finish_album_rating_migration()
     _seed_default_options()
 
     app = FastAPI(title="Music Journal API")
