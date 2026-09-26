@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { RATING_TIERS, TIERS_BY_CODE } from "../ratingTiers.js";
 
-export default function RatingBadge({ rating, onChange, editable = true }) {
+export default function RatingBadge({ rating, onChange, editable = true, compact = false }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const current = rating ? TIERS_BY_CODE[rating] : null;
@@ -20,7 +20,7 @@ export default function RatingBadge({ rating, onChange, editable = true }) {
   if (!editable) {
     return (
       <span
-        className={`rating-pill-badge ${current ? "" : "unrated"}`}
+        className={`rating-pill-badge ${current ? "" : "unrated"} ${compact ? "compact" : ""}`}
         style={current ? { background: current.color, color: current.text } : undefined}
       >
         {current ? current.label : "Rate"}
@@ -32,7 +32,7 @@ export default function RatingBadge({ rating, onChange, editable = true }) {
     <div className="rating-badge-wrap" ref={wrapRef}>
       <button
         type="button"
-        className={`rating-pill-badge ${current ? "" : "unrated"}`}
+        className={`rating-pill-badge ${current ? "" : "unrated"} ${compact ? "compact" : ""}`}
         style={current ? { background: current.color, color: current.text } : undefined}
         onClick={(e) => {
           e.stopPropagation();

@@ -13,7 +13,6 @@ from .database import Base
 
 RATING_VALUES = ("C", "B", "G", "A", "S", "M", "L", "E")
 OPTION_KINDS = ("trait", "subtrait")
-HIGHLIGHT_VALUES = ("strong", "less")
 ROTATION_DAYS = (
     "monday",
     "tuesday",
@@ -91,7 +90,7 @@ class Song(Base):
 class SongTrait(Base):
     __tablename__ = "song_traits"
     __table_args__ = (
-        CheckConstraint(f"highlight IN {HIGHLIGHT_VALUES}", name="ck_trait_highlight"),
+        CheckConstraint(f"highlight IN {RATING_VALUES}", name="ck_trait_highlight"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -101,7 +100,10 @@ class SongTrait(Base):
     # by `highlight` below. Kept only so pre-existing rows aren't dropped;
     # nothing in the app writes or reads it anymore.
     sub_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    highlight: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    # A trait's own rating tier (same codes as Album.rating), overriding the
+    # album's color for just this trait when set; null means "use the
+    # album's own tier" (the neutral/inherited look).
+    highlight: Mapped[str | None] = mapped_column(String(1), nullable=True)
     performer: Mapped[str | None] = mapped_column(String(200), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

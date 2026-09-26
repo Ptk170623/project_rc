@@ -11,8 +11,6 @@
   --accent-strong: #5c7cfa;
   --danger: #e05a5a;
   --featured: #ec4899;
-  --strong: #f97316;
-  --less: #14b8a6;
 }
 
 * {
@@ -290,8 +288,7 @@ body {
   border: 1.5px solid var(--trait-color, var(--border));
   background: transparent;
 }
-.trait-chip.strong,
-.trait-chip.less {
+.trait-chip.rated {
   background: color-mix(in srgb, var(--trait-color) 12%, transparent);
   box-shadow: 0 0 10px 1px color-mix(in srgb, var(--trait-color) 40%, transparent);
 }
@@ -353,6 +350,11 @@ body {
   background: transparent;
   border: 2px dashed var(--border);
   color: var(--text-muted);
+}
+.rating-pill-badge.compact {
+  padding: 4px 10px;
+  font-size: 10px;
+  border-width: 1.5px;
 }
 
 .rating-picker {
@@ -483,36 +485,6 @@ body {
   display: flex;
   gap: 6px;
 }
-.toggle-btn {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  font-family: inherit;
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: var(--text-muted);
-}
-.toggle-btn.strong.active {
-  border-color: var(--strong);
-  color: var(--strong);
-  background: color-mix(in srgb, var(--strong) 15%, transparent);
-}
-.toggle-btn.less.active {
-  border-color: var(--less);
-  color: var(--less);
-  background: color-mix(in srgb, var(--less) 15%, transparent);
-}
-.toggle-btn.inline {
-  flex: none;
-  padding: 5px 10px;
-  font-size: 10px;
-}
-
 .trait-detail-controls {
   display: flex;
   align-items: center;

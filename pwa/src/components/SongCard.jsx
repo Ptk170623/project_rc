@@ -6,8 +6,9 @@ import TraitEditor from "./TraitEditor.jsx";
 import { effectivePerformer, tierColorFor } from "../traitColor.js";
 
 // The rating lives on the album (see AlbumPage), not per song: a song's
-// effective tier is just its album's rating. A trait's own Strong/Less is
-// the only per-song nudge, picked inline in its row (no popup needed).
+// effective tier is just its album's rating. A trait can optionally carry
+// its own tier (same picker as the album), picked inline in its row (no
+// popup needed) — that's the only per-song adjustment there is.
 export default function SongCard({ song, bandName, albumName, albumRating, lineup, onRefresh, editable = true }) {
   const [expanded, setExpanded] = useState(false);
   const [showAddTrait, setShowAddTrait] = useState(false);
@@ -24,9 +25,8 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
     onRefresh();
   };
 
-  const toggleHighlight = (trait, value, e) => {
-    e.stopPropagation();
-    saveTrait(trait.id, trait.highlight === value ? { clear_highlight: true } : { highlight: value });
+  const setTraitTier = (traitId, rating) => {
+    saveTrait(traitId, rating ? { highlight: rating } : { clear_highlight: true });
   };
 
   const removeTrait = async (traitId, e) => {
@@ -50,7 +50,7 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
     return (
       <span
         key={t.id}
-        className={`trait-chip ${t.highlight || ""}`}
+        className={`trait-chip ${t.highlight ? "rated" : ""}`}
         style={style}
       >
         {performer && <span className="trait-chip-person">{performer}</span>}
@@ -112,20 +112,11 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
                     {renderChip(t)}
                     {editable && (
                       <div className="trait-detail-controls">
-                        <button
-                          type="button"
-                          className={`toggle-btn strong inline ${t.highlight === "strong" ? "active" : ""}`}
-                          onClick={(e) => toggleHighlight(t, "strong", e)}
-                        >
-                          Strong
-                        </button>
-                        <button
-                          type="button"
-                          className={`toggle-btn less inline ${t.highlight === "less" ? "active" : ""}`}
-                          onClick={(e) => toggleHighlight(t, "less", e)}
-                        >
-                          Less
-                        </button>
+                        <RatingBadge
+                          rating={t.highlight}
+                          onChange={(rating) => setTraitTier(t.id, rating)}
+                          compact
+                        />
                         <button
                           className="btn btn-small btn-danger"
                           onClick={(e) => removeTrait(t.id, e)}

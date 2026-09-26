@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 Rating = Literal["C", "B", "G", "A", "S", "M", "L", "E"]
 OptionKind = Literal["trait", "subtrait"]
-Highlight = Literal["strong", "less"]
 RotationDay = Literal[
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "others"
 ]
@@ -18,7 +17,7 @@ class SongTraitCreate(BaseModel):
 
 class SongTraitUpdate(BaseModel):
     text: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    highlight: Optional[Highlight] = None
+    highlight: Optional[Rating] = None
     clear_highlight: bool = False
     performer: Optional[str] = Field(default=None, max_length=200)
     clear_performer: bool = False
@@ -127,7 +126,7 @@ class ImportResult(BaseModel):
 # ---------- Selective export/import (by band or by album) ----------
 class TraitExport(BaseModel):
     text: str
-    highlight: Optional[Highlight] = None
+    highlight: Optional[Rating] = None
     performer: Optional[str] = None
 
 

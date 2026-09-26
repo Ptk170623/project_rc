@@ -91,6 +91,44 @@ def _finish_album_rating_migration() -> None:
         conn.commit()
 
 
+def _start_trait_highlight_migration() -> bool:
+    """Same idea again, for `song_traits.highlight`: it used to only allow
+    'strong'/'less', and now holds a full rating tier code instead (the
+    same codes as Album.rating), so an existing table's CHECK constraint
+    needs widening via the same rebuild-and-copy dance."""
+    inspector = inspect(engine)
+    if "song_traits" not in inspector.get_table_names():
+        return False
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT sql FROM sqlite_master WHERE type='table' AND name='song_traits'")
+        ).fetchone()
+        current_sql = row[0] if row else ""
+        if all(f"'{value}'" in current_sql for value in models.RATING_VALUES):
+            return False  # already covers every current rating value
+        conn.execute(text("ALTER TABLE song_traits RENAME TO song_traits_pre_migration"))
+        conn.commit()
+    return True
+
+
+def _finish_trait_highlight_migration() -> None:
+    # Old "strong"/"less" values don't survive the widened constraint (they
+    # aren't rating codes), so they're cleared to NULL — the trait itself,
+    # its text and performer, are unaffected; it just goes back to "no
+    # override, use the album's own tier" until re-marked.
+    with engine.connect() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO song_traits (id, song_id, text, sub_text, highlight, performer, position, created_at) "
+                f"SELECT id, song_id, text, sub_text, "
+                f"CASE WHEN highlight IN {models.RATING_VALUES} THEN highlight ELSE NULL END, "
+                "performer, position, created_at FROM song_traits_pre_migration"
+            )
+        )
+        conn.execute(text("DROP TABLE song_traits_pre_migration"))
+        conn.commit()
+
+
 def _seed_default_options() -> None:
     db = SessionLocal()
     try:
@@ -108,11 +146,14 @@ def _seed_default_options() -> None:
 def create_app() -> FastAPI:
     needs_rating_migration = _start_song_rating_migration()
     needs_album_rating_migration = _start_album_rating_migration()
+    needs_trait_highlight_migration = _start_trait_highlight_migration()
     Base.metadata.create_all(bind=engine)
     if needs_rating_migration:
         _finish_song_rating_migration()
     if needs_album_rating_migration:
         _finish_album_rating_migration()
+    if needs_trait_highlight_migration:
+        _finish_trait_highlight_migration()
     _seed_default_options()
 
     app = FastAPI(title="Music Journal API")

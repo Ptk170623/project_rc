@@ -6,9 +6,9 @@ organized into sections:
 - **Ratings** — bands → albums → songs, with a rating (Like / Like So Much
   / Meh / Good / Great / Amazing / Extraordinary / Legendary) set once per
   album — every song in it inherits that rating — and "traits" (quick
-  notes, e.g. instruments) that can each be marked Strong/Less relative to
-  the album's rating, inline with one tap, and tagged with who performed
-  it via a per-album default lineup you can override per song.
+  notes, e.g. instruments) that can each optionally get their own rating
+  from that same set, picked inline with one tap, and tagged with who
+  performed it via a per-album default lineup you can override per song.
 - **Weekly Rotation** — up to 6 bands per weekday whose discography you're
   currently working through, plus an Others catch-all for anything not
   tied to a specific day.
@@ -184,17 +184,17 @@ The home screen is a picker between the two sections below.
     traits in a row without reopening it.
   - Added traits show up at the top of the banner as pill-shaped outlines,
     tinted with the album's rating color.
-  - Each trait row has its own **Strong** / **Less** buttons right there —
-    no popup, one tap. The outline (and a soft glow behind it) shifts to
-    the color of the tier just above or below the album's, so a "strong"
-    trait on a Great album glows Amazing-purple and a "less" one glows
-    Good-blue. Tapping the same button again clears it back to the
-    album's own tier color. This is the only per-song adjustment there
-    is — pick out what stood out (or didn't) trait by trait instead of
-    re-rating every song.
-  - Clicking the trait itself (not the Strong/Less buttons) opens a small
-    editor to set who played/performed it. If the album has a **Lineup**
-    (see below) with a matching instrument, that name shows automatically;
+  - Each trait row has its own small rating pill right there — no popup,
+    one tap opens the exact same 8-tier picker used for the album. Pick
+    one and the outline (plus a soft glow behind it) switches to that
+    tier's color outright — an Extraordinary guitar solo glows magenta
+    even if the album itself is only rated Good. Tapping the same tier
+    again clears it back to just showing the album's own tier color. This
+    is the only per-song adjustment there is — call out what stood out
+    (or didn't), trait by trait, instead of re-rating every song.
+  - Clicking the trait itself (not its rating pill) opens a small editor
+    to set who played/performed it. If the album has a **Lineup** (see
+    below) with a matching instrument, that name shows automatically;
     typing a name here overrides it just for this song, and **Reset to
     album default** clears the override.
 - **Lineup** (button on the album page) lets you define the default
@@ -244,8 +244,8 @@ The home screen is a picker between the two sections below.
   whose album isn't rated yet always sit at the bottom, in either rating
   direction.
 - Opens **locked** by default — you can expand a song to see its traits,
-  but adding/removing traits, marking Strong/Less, and deleting the song
-  are all disabled. Tap **Locked — tap to edit** to unlock editing (the
+  but adding/removing traits, giving one its own rating, and deleting the
+  song are all disabled. Tap **Locked — tap to edit** to unlock editing (the
   button turns red and reads **Editing on — tap to lock**); tap it again
   to lock back up. The lock resets to on every time you open the page, so
   browsing your whole library never risks an accidental change.
