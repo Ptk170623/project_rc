@@ -4,10 +4,10 @@ A personal app for actively listening to and keeping track of music,
 organized into sections:
 
 - **Ratings** — bands → albums → songs, with a rating (Like / Like So Much
-  / Meh / Good / Great / Amazing / Legendary) and "traits" (quick notes,
-  e.g. instruments) that can each be marked Strong/Less and tagged with
-  who performed it, with a per-album default lineup you can override per
-  song.
+  / Meh / Good / Great / Amazing / Extraordinary / Legendary) and "traits"
+  (quick notes, e.g. instruments) that can each be marked Strong/Less and
+  tagged with who performed it, with a per-album default lineup you can
+  override per song.
 - **Weekly Rotation** — up to 6 bands per weekday whose discography you're
   currently working through, plus an Others catch-all for anything not
   tied to a specific day.
@@ -167,10 +167,11 @@ The home screen is a picker between the two sections below.
 - Each song shows up as a "banner" (a rectangle with rounded ends)
   displaying: the band and album in a small font at the top; the song name
   in a large font below it; and a colored pill with the rating (click to
-  choose) on the right. From best to worst: Legendary, Amazing, Great,
-  Good, Meh — and below those, **Like**/**Like So Much**, which aren't a
-  lower quality judgment, they're for a song you haven't listened to
-  enough times yet to give a real rating, just a first impression.
+  choose) on the right. From best to worst: Legendary, Extraordinary,
+  Amazing, Great, Good, Meh — and below those, **Like**/**Like So Much**,
+  which aren't a lower quality judgment, they're for a song you haven't
+  listened to enough times yet to give a real rating, just a first
+  impression.
 - Clicking a song expands a panel to manage its "traits" (instruments or
   other things worth noting about that song):
   - The **+** button opens a quick list of options (editable) or lets you
