@@ -43,6 +43,7 @@ export const api = {
   deleteAlbum: (albumId) => request(`/albums/${albumId}`, { method: "DELETE" }),
 
   // Songs
+  listAllSongs: () => request("/songs"),
   createSong: (albumId, name) =>
     request(`/albums/${albumId}/songs`, {
       method: "POST",

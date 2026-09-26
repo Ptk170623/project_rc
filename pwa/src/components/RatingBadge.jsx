@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { RATING_TIERS, TIERS_BY_CODE } from "../ratingTiers.js";
 
-export default function RatingBadge({ rating, onChange }) {
+export default function RatingBadge({ rating, onChange, editable = true }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const current = rating ? TIERS_BY_CODE[rating] : null;
@@ -16,6 +16,17 @@ export default function RatingBadge({ rating, onChange }) {
     document.addEventListener("pointerdown", handleOutside);
     return () => document.removeEventListener("pointerdown", handleOutside);
   }, [open]);
+
+  if (!editable) {
+    return (
+      <span
+        className={`rating-pill-badge ${current ? "" : "unrated"}`}
+        style={current ? { background: current.color, color: current.text } : undefined}
+      >
+        {current ? current.label : "Rate"}
+      </span>
+    );
+  }
 
   return (
     <div className="rating-badge-wrap" ref={wrapRef}>

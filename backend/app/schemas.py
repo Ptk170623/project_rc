@@ -97,6 +97,14 @@ class AlbumDetail(AlbumRead):
     lineup: list[AlbumLineupRead] = []
 
 
+# ---------- Song, with its band/album context (for the All Songs list) ----------
+class SongWithContext(SongRead):
+    band_id: int
+    band_name: str
+    album_name: str
+    lineup: list[AlbumLineupRead] = []
+
+
 # ---------- Import ----------
 class ImportResult(BaseModel):
     band_id: int

@@ -273,6 +273,48 @@ export const api = {
     ),
 
   // ---------- Songs ----------
+  // Every song across every band/album, each carrying its own band/album
+  // context and lineup (mirrors the backend's GET /songs, since IndexedDB
+  // has no join to do this in one query).
+  listAllSongs: () =>
+    withStore(
+      ["songs", "albums", "bands", "traits", "album_lineup"],
+      "readonly",
+      async ({ songs, albums, bands, traits, album_lineup }) => {
+        const allSongs = await reqAll(songs);
+        const albumsById = new Map((await reqAll(albums)).map((a) => [a.id, a]));
+        const bandsById = new Map((await reqAll(bands)).map((b) => [b.id, b]));
+
+        const result = [];
+        for (const song of allSongs) {
+          const album = albumsById.get(song.album_id);
+          const band = album ? bandsById.get(album.band_id) : null;
+          const traitList = await reqIndexAll(traits, "song_id", song.id);
+          traitList.sort((a, b) => a.position - b.position);
+          const lineupList = album
+            ? await reqIndexAll(album_lineup, "album_id", album.id)
+            : [];
+          lineupList.sort((a, b) => a.position - b.position);
+          result.push({
+            ...song,
+            traits: traitList,
+            band_id: album ? album.band_id : null,
+            band_name: band ? band.name : "",
+            album_name: album ? album.name : "",
+            lineup: lineupList,
+          });
+        }
+
+        result.sort((a, b) => {
+          const bandCompare = a.band_name.localeCompare(b.band_name);
+          if (bandCompare !== 0) return bandCompare;
+          if (a.album_id !== b.album_id) return a.album_id - b.album_id;
+          return a.position - b.position;
+        });
+        return result;
+      }
+    ),
+
   createSong: (albumId, name) =>
     withStore("songs", "readwrite", async (store) => {
       const existing = await reqIndexAll(store, "album_id", Number(albumId));

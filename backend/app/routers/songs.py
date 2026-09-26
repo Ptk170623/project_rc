@@ -17,6 +17,32 @@ def _next_position(db: Session, album_id: int) -> int:
     return (current_max or 0) + 1
 
 
+@router.get("/songs", response_model=list[schemas.SongWithContext])
+def list_all_songs(db: Session = Depends(get_db)):
+    songs = (
+        db.query(models.Song)
+        .join(models.Album, models.Song.album_id == models.Album.id)
+        .join(models.Band, models.Album.band_id == models.Band.id)
+        .order_by(models.Band.name, models.Album.id, models.Song.position)
+        .all()
+    )
+    return [
+        schemas.SongWithContext(
+            id=song.id,
+            album_id=song.album_id,
+            name=song.name,
+            rating=song.rating,
+            position=song.position,
+            traits=song.traits,
+            band_id=song.album.band_id,
+            band_name=song.album.band.name,
+            album_name=song.album.name,
+            lineup=song.album.lineup,
+        )
+        for song in songs
+    ]
+
+
 @router.post("/albums/{album_id}/songs", response_model=schemas.SongRead, status_code=201)
 def create_song(album_id: int, payload: schemas.SongCreate, db: Session = Depends(get_db)):
     album = db.get(models.Album, album_id)

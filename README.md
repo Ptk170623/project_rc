@@ -11,6 +11,8 @@ organized into sections:
 - **Weekly Rotation** — up to 6 bands per weekday whose discography you're
   currently working through, plus an Others catch-all for anything not
   tied to a specific day.
+- **All Songs** — every song from every band in one flat list, with a
+  lock/edit toggle so you can browse without risking an accidental change.
 
 There are two versions in this repository:
 
@@ -220,3 +222,15 @@ The home screen is a picker between the two sections below.
   "background" pick to contrast against, so all of them are featured.
 - **Others**, at the bottom, is the same kind of list but not tied to a
   day and never features anyone — for anything else you're sampling.
+
+### All Songs
+
+- Every song from every band and album, flattened into one list (same
+  banner style as an album page), grouped by band then album so it reads
+  like flipping through your whole library in order.
+- Opens **locked** by default — you can expand a song to see its rating
+  and traits, but rating, adding/removing traits, and deleting the song
+  are all disabled. Tap **Locked — tap to edit** to unlock editing (the
+  button turns red and reads **Editing on — tap to lock**); tap it again
+  to lock back up. The lock resets to on every time you open the page, so
+  browsing your whole library never risks an accidental change.

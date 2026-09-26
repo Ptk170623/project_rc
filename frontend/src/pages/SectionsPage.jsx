@@ -17,6 +17,11 @@ export default function SectionsPage() {
           <h3>Weekly Rotation</h3>
           <p>What you're spinning each day, plus an Others list for loose picks.</p>
         </Link>
+        <Link to="/songs" className="section-card all-songs">
+          <div className="icon">🎵</div>
+          <h3>All Songs</h3>
+          <p>Every song from every band in one list, with an edit lock to browse safely.</p>
+        </Link>
       </div>
     </div>
   );

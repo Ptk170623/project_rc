@@ -5,7 +5,7 @@ import QuickPicker from "./QuickPicker.jsx";
 import TraitEditor from "./TraitEditor.jsx";
 import { effectivePerformer, tierColorFor } from "../traitColor.js";
 
-export default function SongCard({ song, bandName, albumName, lineup, onRefresh }) {
+export default function SongCard({ song, bandName, albumName, lineup, onRefresh, editable = true }) {
   const [expanded, setExpanded] = useState(false);
   const [showAddTrait, setShowAddTrait] = useState(false);
   const [editingTraitId, setEditingTraitId] = useState(null);
@@ -67,7 +67,7 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh 
         </div>
         <div className="song-pill-main">
           <span className="song-name">{song.name}</span>
-          <RatingBadge rating={song.rating} onChange={changeRating} />
+          <RatingBadge rating={song.rating} onChange={changeRating} editable={editable} />
         </div>
       </div>
 
@@ -75,15 +75,17 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh 
         <div className="song-dropdown" onClick={(e) => e.stopPropagation()}>
           <div className="song-dropdown-header">
             <span>Traits</span>
-            <button
-              className="btn btn-small btn-primary"
-              onClick={() => setShowAddTrait((v) => !v)}
-            >
-              +
-            </button>
+            {editable && (
+              <button
+                className="btn btn-small btn-primary"
+                onClick={() => setShowAddTrait((v) => !v)}
+              >
+                +
+              </button>
+            )}
           </div>
 
-          {showAddTrait && (
+          {editable && showAddTrait && (
             <QuickPicker
               kind="trait"
               title="Trait"
@@ -100,18 +102,21 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh 
                   <div
                     className="trait-detail-main"
                     onClick={() =>
+                      editable &&
                       setEditingTraitId(editingTraitId === t.id ? null : t.id)
                     }
                   >
                     {renderChip(t)}
-                    <button
-                      className="btn btn-small btn-danger"
-                      onClick={(e) => removeTrait(t.id, e)}
-                    >
-                      Remove
-                    </button>
+                    {editable && (
+                      <button
+                        className="btn btn-small btn-danger"
+                        onClick={(e) => removeTrait(t.id, e)}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
-                  {editingTraitId === t.id && (
+                  {editable && editingTraitId === t.id && (
                     <TraitEditor
                       trait={t}
                       defaultPerformer={defaultPerformer}
@@ -127,9 +132,11 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh 
             )}
           </ul>
 
-          <button className="btn btn-small btn-danger delete-song-btn" onClick={removeSong}>
-            Delete song
-          </button>
+          {editable && (
+            <button className="btn btn-small btn-danger delete-song-btn" onClick={removeSong}>
+              Delete song
+            </button>
+          )}
         </div>
       )}
     </div>

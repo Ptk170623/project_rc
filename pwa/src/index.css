@@ -687,6 +687,9 @@ body {
 .section-card.rotation .icon {
   background: rgba(236, 72, 153, 0.18);
 }
+.section-card.all-songs .icon {
+  background: rgba(74, 144, 217, 0.18);
+}
 .section-card h3 {
   margin: 0;
   font-size: 15px;

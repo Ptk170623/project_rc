@@ -1,5 +1,6 @@
 import { Link, Route, Routes } from "react-router-dom";
 import AlbumPage from "./pages/AlbumPage.jsx";
+import AllSongsPage from "./pages/AllSongsPage.jsx";
 import BandPage from "./pages/BandPage.jsx";
 import BandsPage from "./pages/BandsPage.jsx";
 import RotationPage from "./pages/RotationPage.jsx";
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/bands/:bandId" element={<BandPage />} />
           <Route path="/albums/:albumId" element={<AlbumPage />} />
           <Route path="/rotation" element={<RotationPage />} />
+          <Route path="/songs" element={<AllSongsPage />} />
         </Routes>
       </main>
     </div>
