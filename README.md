@@ -6,9 +6,10 @@ organized into sections:
 - **Ratings** — bands → albums → songs, with a rating (Like / Like So Much
   / Meh / Good / Great / Amazing / Extraordinary / Legendary) set once per
   album — every song in it inherits that rating — and "traits" (quick
-  notes, e.g. instruments) that can each optionally get their own rating
-  from that same set, picked inline with one tap, and tagged with who
-  performed it via a per-album default lineup you can override per song.
+  notes, e.g. instruments) that can each optionally get their own tier
+  (Legendary/Amazing/Great/Good/Meh) from five always-visible buttons, no
+  popup, and be tagged with who performed it via a per-album default
+  lineup you can override per song.
 - **Weekly Rotation** — up to 6 bands per weekday whose discography you're
   currently working through, plus an Others catch-all for anything not
   tied to a specific day.
@@ -183,16 +184,19 @@ The home screen is a picker between the two sections below.
     type free text. It stays open after each pick, so you can add several
     traits in a row without reopening it.
   - Added traits show up at the top of the banner as pill-shaped outlines,
-    tinted with the album's rating color.
-  - Each trait row has its own small rating pill right there — no popup,
-    one tap opens the exact same 8-tier picker used for the album. Pick
-    one and the outline (plus a soft glow behind it) switches to that
-    tier's color outright — an Extraordinary guitar solo glows magenta
-    even if the album itself is only rated Good. Tapping the same tier
-    again clears it back to just showing the album's own tier color. This
-    is the only per-song adjustment there is — call out what stood out
-    (or didn't), trait by trait, instead of re-rating every song.
-  - Clicking the trait itself (not its rating pill) opens a small editor
+    tinted with the album's rating color, and appear last there (in the
+    order added) even though they show up first below (see next point).
+  - Each trait row has five small, always-visible tier buttons right there
+    — Legendary, Amazing, Great, Good, Meh — no popup, just tap one. The
+    outline (plus a soft glow behind it) switches to that tier's color
+    outright — a Legendary guitar solo glows gold even if the album itself
+    is only rated Good. Tapping the same tier again clears it back to just
+    showing the album's own tier color. This is the only per-song
+    adjustment there is — call out what stood out (or didn't), trait by
+    trait, instead of re-rating every song.
+  - The list orders newest-first, so a trait you just added shows up right
+    at the top to mark it without hunting for it.
+  - Clicking the trait itself (not its tier buttons) opens a small editor
     to set who played/performed it. If the album has a **Lineup** (see
     below) with a matching instrument, that name shows automatically;
     typing a name here overrides it just for this song, and **Reset to

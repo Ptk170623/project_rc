@@ -351,12 +351,6 @@ body {
   border: 2px dashed var(--border);
   color: var(--text-muted);
 }
-.rating-pill-badge.compact {
-  padding: 4px 10px;
-  font-size: 10px;
-  border-width: 1.5px;
-}
-
 .rating-picker {
   display: flex;
   flex-direction: column;
@@ -491,6 +485,24 @@ body {
   gap: 6px;
   margin-left: auto;
   flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.trait-tier-buttons {
+  display: flex;
+  gap: 3px;
+}
+.trait-tier-btn {
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  font-family: inherit;
+  border: 1.5px solid;
+  background: transparent;
+  white-space: nowrap;
 }
 
 /* Album lineup */

@@ -3,11 +3,12 @@ import { api } from "../api.js";
 import RatingBadge from "./RatingBadge.jsx";
 import QuickPicker from "./QuickPicker.jsx";
 import TraitEditor from "./TraitEditor.jsx";
+import TraitTierButtons from "./TraitTierButtons.jsx";
 import { effectivePerformer, tierColorFor } from "../traitColor.js";
 
 // The rating lives on the album (see AlbumPage), not per song: a song's
 // effective tier is just its album's rating. A trait can optionally carry
-// its own tier (same picker as the album), picked inline in its row (no
+// its own tier, picked inline in its row via always-visible buttons (no
 // popup needed) — that's the only per-song adjustment there is.
 export default function SongCard({ song, bandName, albumName, albumRating, lineup, onRefresh, editable = true }) {
   const [expanded, setExpanded] = useState(false);
@@ -98,7 +99,7 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
           )}
 
           <ul className="trait-detail-list">
-            {song.traits.map((t) => {
+            {[...song.traits].reverse().map((t) => {
               const defaultPerformer = effectivePerformer({ ...t, performer: null }, lineup);
               return (
                 <li key={t.id} className="trait-detail-item">
@@ -112,10 +113,9 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
                     {renderChip(t)}
                     {editable && (
                       <div className="trait-detail-controls">
-                        <RatingBadge
-                          rating={t.highlight}
+                        <TraitTierButtons
+                          highlight={t.highlight}
                           onChange={(rating) => setTraitTier(t.id, rating)}
-                          compact
                         />
                         <button
                           className="btn btn-small btn-danger"
