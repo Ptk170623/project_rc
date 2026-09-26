@@ -32,12 +32,12 @@ def list_all_songs(db: Session = Depends(get_db)):
             album_id=song.album_id,
             name=song.name,
             rating=song.rating,
+            plus=song.plus,
             position=song.position,
             traits=song.traits,
             band_id=song.album.band_id,
             band_name=song.album.band.name,
             album_name=song.album.name,
-            album_rating=song.album.rating,
             lineup=song.album.lineup,
         )
         for song in songs
@@ -79,6 +79,8 @@ def update_song(song_id: int, payload: schemas.SongUpdate, db: Session = Depends
         song.rating = None
     elif payload.rating is not None:
         song.rating = payload.rating
+    if payload.plus is not None:
+        song.plus = payload.plus
     db.commit()
     db.refresh(song)
     return song

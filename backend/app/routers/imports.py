@@ -273,6 +273,7 @@ async def import_data(file: UploadFile, db: Session = Depends(get_db)):
                 album_id=album.id,
                 name=song_data["name"],
                 rating=song_data.get("rating"),
+                plus=song_data.get("plus", False),
                 position=position,
             )
             db.add(song)
@@ -283,6 +284,7 @@ async def import_data(file: UploadFile, db: Session = Depends(get_db)):
                         song_id=song.id,
                         text=trait_data["text"],
                         highlight=trait_data.get("highlight"),
+                        plus=trait_data.get("plus", False),
                         performer=trait_data.get("performer"),
                         position=i,
                     )

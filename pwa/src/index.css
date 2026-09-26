@@ -301,6 +301,11 @@ body {
   font-size: 11px;
   color: var(--text-muted);
 }
+.trait-chip-plus {
+  margin-left: 2px;
+  font-weight: 800;
+  color: var(--trait-color, var(--text-muted));
+}
 
 .song-pill-main {
   display: flex;
@@ -328,6 +333,26 @@ body {
 .rating-badge-wrap {
   position: relative;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rating-plus-toggle {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid;
+  background: transparent;
+  font-weight: 800;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .rating-pill-badge {
@@ -503,6 +528,9 @@ body {
   border: 1.5px solid;
   background: transparent;
   white-space: nowrap;
+}
+.trait-tier-plus {
+  padding: 3px 7px;
 }
 
 /* Album lineup */

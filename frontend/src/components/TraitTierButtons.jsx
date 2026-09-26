@@ -1,19 +1,20 @@
-import { TIERS_BY_CODE } from "../ratingTiers.js";
+import { RATING_TIERS, TIERS_BY_CODE } from "../ratingTiers.js";
 
-// A trait's classification, always visible inline (no popup): five short
-// buttons, each tinted in its own tier's color, filled when active. Tapping
-// the active one again clears it back to just the album's own tier.
-const TRAIT_TIER_CODES = ["S", "A", "G", "B", "C"];
+// A trait's classification, always visible inline (no popup): one short
+// button per tier (same set as the song's own rating), each tinted in its
+// own color, filled when active. Tapping the active one again clears it
+// back to just inheriting the song's own tier. A separate "+" toggle only
+// shows once the trait has its own tier, mirroring the song's own boost.
+export default function TraitTierButtons({ highlight, plus, onChange, onTogglePlus }) {
+  const activeTier = highlight ? TIERS_BY_CODE[highlight] : null;
 
-export default function TraitTierButtons({ highlight, onChange }) {
   return (
     <div className="trait-tier-buttons">
-      {TRAIT_TIER_CODES.map((code) => {
-        const tier = TIERS_BY_CODE[code];
-        const active = highlight === code;
+      {RATING_TIERS.map((tier) => {
+        const active = highlight === tier.code;
         return (
           <button
-            key={code}
+            key={tier.code}
             type="button"
             className={`trait-tier-btn ${active ? "active" : ""}`}
             style={
@@ -23,13 +24,30 @@ export default function TraitTierButtons({ highlight, onChange }) {
             }
             onClick={(e) => {
               e.stopPropagation();
-              onChange(active ? null : code);
+              onChange(active ? null : tier.code);
             }}
           >
-            {tier.label.slice(0, 3).toUpperCase()}
+            {tier.short}
           </button>
         );
       })}
+      {activeTier && (
+        <button
+          type="button"
+          className={`trait-tier-btn trait-tier-plus ${plus ? "active" : ""}`}
+          style={
+            plus
+              ? { background: activeTier.color, borderColor: activeTier.color, color: activeTier.text }
+              : { borderColor: activeTier.color, color: activeTier.color }
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePlus(!plus);
+          }}
+        >
+          +
+        </button>
+      )}
     </div>
   );
 }

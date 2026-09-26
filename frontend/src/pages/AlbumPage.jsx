@@ -113,7 +113,6 @@ export default function AlbumPage() {
               song={song}
               bandName={album.band_name}
               albumName={album.name}
-              albumRating={album.rating}
               lineup={album.lineup}
               onRefresh={load}
             />

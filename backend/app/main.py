@@ -6,6 +6,12 @@ from . import models
 from .database import Base, SessionLocal, engine
 from .routers import albums, bands, imports, lineup, options, rotation, songs, traits
 
+# Dropped when the top tier became Amazing (a "+" on the song/trait itself
+# covers what Legendary/Extraordinary used to). Existing rows carrying
+# either code get nulled out by the migrations below, same treatment as any
+# other value that stops being valid.
+_DROPPED_RATING_CODES = ("S", "E")
+
 DEFAULT_TRAIT_OPTIONS = [
     "Vocal",
     "Vocals",
@@ -21,13 +27,14 @@ DEFAULT_TRAIT_OPTIONS = [
 
 def _start_song_rating_migration() -> bool:
     """SQLite bakes a CHECK constraint into a table's DDL at creation time,
-    so widening `RATING_VALUES` in models.py doesn't retroactively update
-    an already-created `songs` table on someone's existing music.db —
-    inserting one of the new rating codes would still violate the old
-    constraint. SQLite has no ALTER TABLE for CHECK constraints, so the
-    table has to be rebuilt; this only happens once, and only when needed.
-    Renames the old table out of the way so `Base.metadata.create_all`
-    recreates `songs` fresh with the current constraint; pair with
+    so a change to `RATING_VALUES` in models.py doesn't retroactively update
+    an already-created `songs` table on someone's existing music.db — either
+    a new code would violate the old constraint, or an old dropped code
+    would keep being accepted. SQLite has no ALTER TABLE for CHECK
+    constraints (or for adding the new `plus` column), so the table has to
+    be rebuilt; this only happens once, and only when needed. Renames the
+    old table out of the way so `Base.metadata.create_all` recreates `songs`
+    fresh with the current constraint and columns; pair with
     `_finish_song_rating_migration` to copy the old rows back in.
     """
     inspector = inspect(engine)
@@ -38,8 +45,8 @@ def _start_song_rating_migration() -> bool:
             text("SELECT sql FROM sqlite_master WHERE type='table' AND name='songs'")
         ).fetchone()
         current_sql = row[0] if row else ""
-        if all(f"'{value}'" in current_sql for value in models.RATING_VALUES):
-            return False  # already covers every current rating value
+        if "plus" in current_sql:
+            return False  # already on the current schema
         conn.execute(text("ALTER TABLE songs RENAME TO songs_pre_migration"))
         conn.commit()
     return True
@@ -49,8 +56,10 @@ def _finish_song_rating_migration() -> None:
     with engine.connect() as conn:
         conn.execute(
             text(
-                "INSERT INTO songs (id, album_id, name, rating, position, created_at) "
-                "SELECT id, album_id, name, rating, position, created_at FROM songs_pre_migration"
+                "INSERT INTO songs (id, album_id, name, rating, plus, position, created_at) "
+                f"SELECT id, album_id, name, "
+                f"CASE WHEN rating IN {models.RATING_VALUES} THEN rating ELSE NULL END, "
+                "0, position, created_at FROM songs_pre_migration"
             )
         )
         conn.execute(text("DROP TABLE songs_pre_migration"))
@@ -58,12 +67,11 @@ def _finish_song_rating_migration() -> None:
 
 
 def _start_album_rating_migration() -> bool:
-    """Same idea as `_start_song_rating_migration`, but for a column that
-    didn't exist at all on an older `albums` table (rating now lives on
-    the album, not per song). SQLite can't ALTER TABLE in a CHECK
-    constraint after the fact, so this rebuilds the table when needed;
-    pair with `_finish_album_rating_migration` to copy the old rows back
-    in (rating defaults to NULL for them, same as if never rated)."""
+    """Same idea as `_start_song_rating_migration`: rebuilds `albums` when
+    either the `rating` column is missing entirely (a database from before
+    albums had one at all) or its CHECK constraint still allows a code
+    that's since been dropped from `RATING_VALUES`. Pair with
+    `_finish_album_rating_migration` to copy the old rows back in."""
     inspector = inspect(engine)
     if "albums" not in inspector.get_table_names():
         return False
@@ -72,7 +80,9 @@ def _start_album_rating_migration() -> bool:
             text("SELECT sql FROM sqlite_master WHERE type='table' AND name='albums'")
         ).fetchone()
         current_sql = row[0] if row else ""
-        if "rating" in current_sql:
+        if "rating" in current_sql and not any(
+            f"'{value}'" in current_sql for value in _DROPPED_RATING_CODES
+        ):
             return False  # already migrated
         conn.execute(text("ALTER TABLE albums RENAME TO albums_pre_migration"))
         conn.commit()
@@ -81,10 +91,20 @@ def _start_album_rating_migration() -> bool:
 
 def _finish_album_rating_migration() -> None:
     with engine.connect() as conn:
+        columns = {
+            row[1]
+            for row in conn.execute(text("PRAGMA table_info(albums_pre_migration)")).fetchall()
+        }
+        rating_select = (
+            f"CASE WHEN rating IN {models.RATING_VALUES} THEN rating ELSE NULL END"
+            if "rating" in columns
+            else "NULL"
+        )
         conn.execute(
             text(
-                "INSERT INTO albums (id, band_id, name, created_at) "
-                "SELECT id, band_id, name, created_at FROM albums_pre_migration"
+                "INSERT INTO albums (id, band_id, name, rating, created_at) "
+                f"SELECT id, band_id, name, {rating_select}, created_at "
+                "FROM albums_pre_migration"
             )
         )
         conn.execute(text("DROP TABLE albums_pre_migration"))
@@ -92,10 +112,11 @@ def _finish_album_rating_migration() -> None:
 
 
 def _start_trait_highlight_migration() -> bool:
-    """Same idea again, for `song_traits.highlight`: it used to only allow
-    'strong'/'less', and now holds a full rating tier code instead (the
-    same codes as Album.rating), so an existing table's CHECK constraint
-    needs widening via the same rebuild-and-copy dance."""
+    """Same idea again, for `song_traits`: `highlight`'s CHECK constraint
+    needs to track `RATING_VALUES` (it's had to widen in the past, and now
+    narrows as Legendary/Extraordinary are dropped), and this round also
+    adds the new `plus` column — both need the same rebuild-and-copy
+    dance."""
     inspector = inspect(engine)
     if "song_traits" not in inspector.get_table_names():
         return False
@@ -104,25 +125,26 @@ def _start_trait_highlight_migration() -> bool:
             text("SELECT sql FROM sqlite_master WHERE type='table' AND name='song_traits'")
         ).fetchone()
         current_sql = row[0] if row else ""
-        if all(f"'{value}'" in current_sql for value in models.RATING_VALUES):
-            return False  # already covers every current rating value
+        if "plus" in current_sql:
+            return False  # already on the current schema
         conn.execute(text("ALTER TABLE song_traits RENAME TO song_traits_pre_migration"))
         conn.commit()
     return True
 
 
 def _finish_trait_highlight_migration() -> None:
-    # Old "strong"/"less" values don't survive the widened constraint (they
-    # aren't rating codes), so they're cleared to NULL — the trait itself,
-    # its text and performer, are unaffected; it just goes back to "no
-    # override, use the album's own tier" until re-marked.
+    # A highlight value that no longer survives the constraint (an old
+    # "strong"/"less" marker, or a since-dropped rating code) is cleared to
+    # NULL — the trait itself, its text and performer, are unaffected; it
+    # just goes back to "no override, use the song's own tier" until
+    # re-marked.
     with engine.connect() as conn:
         conn.execute(
             text(
-                "INSERT INTO song_traits (id, song_id, text, sub_text, highlight, performer, position, created_at) "
+                "INSERT INTO song_traits (id, song_id, text, sub_text, highlight, plus, performer, position, created_at) "
                 f"SELECT id, song_id, text, sub_text, "
                 f"CASE WHEN highlight IN {models.RATING_VALUES} THEN highlight ELSE NULL END, "
-                "performer, position, created_at FROM song_traits_pre_migration"
+                "0, performer, position, created_at FROM song_traits_pre_migration"
             )
         )
         conn.execute(text("DROP TABLE song_traits_pre_migration"))

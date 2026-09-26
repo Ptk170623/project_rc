@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-Rating = Literal["C", "B", "G", "A", "S", "M", "L", "E"]
+Rating = Literal["C", "B", "G", "A", "M", "L"]
 OptionKind = Literal["trait", "subtrait"]
 RotationDay = Literal[
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "others"
@@ -19,6 +19,7 @@ class SongTraitUpdate(BaseModel):
     text: Optional[str] = Field(default=None, min_length=1, max_length=200)
     highlight: Optional[Rating] = None
     clear_highlight: bool = False
+    plus: Optional[bool] = None
     performer: Optional[str] = Field(default=None, max_length=200)
     clear_performer: bool = False
 
@@ -30,6 +31,7 @@ class SongTraitRead(BaseModel):
     song_id: int
     text: str
     highlight: Optional[str]
+    plus: bool
     performer: Optional[str]
     position: int
 
@@ -43,6 +45,7 @@ class SongUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=300)
     rating: Optional[Rating] = None
     clear_rating: bool = False
+    plus: Optional[bool] = None
 
 
 class SongRead(BaseModel):
@@ -52,6 +55,7 @@ class SongRead(BaseModel):
     album_id: int
     name: str
     rating: Optional[str]
+    plus: bool
     position: int
     traits: list[SongTraitRead] = []
 
@@ -108,7 +112,6 @@ class SongWithContext(SongRead):
     band_id: int
     band_name: str
     album_name: str
-    album_rating: Optional[str] = None
     lineup: list[AlbumLineupRead] = []
 
 
@@ -127,12 +130,14 @@ class ImportResult(BaseModel):
 class TraitExport(BaseModel):
     text: str
     highlight: Optional[Rating] = None
+    plus: bool = False
     performer: Optional[str] = None
 
 
 class SongExport(BaseModel):
     name: str
     rating: Optional[Rating] = None
+    plus: bool = False
     traits: list[TraitExport] = []
 
 

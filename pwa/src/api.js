@@ -46,9 +46,11 @@ async function exportAlbumData(album, { songs, traits, album_lineup }) {
     songExports.push({
       name: song.name,
       rating: song.rating || null,
+      plus: song.plus || false,
       traits: traitList.map((t) => ({
         text: t.text,
         highlight: t.highlight || null,
+        plus: t.plus || false,
         performer: t.performer || null,
       })),
     });
@@ -313,7 +315,6 @@ export const api = {
             band_id: album ? album.band_id : null,
             band_name: band ? band.name : "",
             album_name: album ? album.name : "",
-            album_rating: album ? album.rating : null,
             lineup: lineupList,
           });
         }
@@ -335,6 +336,7 @@ export const api = {
         album_id: Number(albumId),
         name,
         rating: null,
+        plus: false,
         position: maxPosition(existing) + 1,
       };
       record.id = await reqAdd(store, record);
@@ -348,6 +350,7 @@ export const api = {
       if (payload.name != null) song.name = payload.name;
       if (payload.clear_rating) song.rating = null;
       else if (payload.rating != null) song.rating = payload.rating;
+      if (payload.plus != null) song.plus = payload.plus;
       await reqPut(songs, song);
       const traitList = await reqIndexAll(traits, "song_id", song.id);
       traitList.sort((a, b) => a.position - b.position);
@@ -370,6 +373,7 @@ export const api = {
         song_id: Number(songId),
         text,
         highlight: null,
+        plus: false,
         performer: null,
         position: maxPosition(existing) + 1,
       };
@@ -382,8 +386,11 @@ export const api = {
       const trait = await reqGet(store, Number(traitId));
       if (!trait) throw notFound("Trait");
       if (payload.text != null) trait.text = payload.text;
-      if (payload.clear_highlight) trait.highlight = null;
-      else if (payload.highlight != null) trait.highlight = payload.highlight;
+      if (payload.clear_highlight) {
+        trait.highlight = null;
+        trait.plus = false;
+      } else if (payload.highlight != null) trait.highlight = payload.highlight;
+      if (payload.plus != null) trait.plus = payload.plus;
       if (payload.clear_performer) trait.performer = null;
       else if (payload.performer != null) trait.performer = payload.performer;
       await reqPut(store, trait);
@@ -490,7 +497,7 @@ export const api = {
               skipped.push(title);
               continue;
             }
-            const song = { album_id: album.id, name: title, rating: null, position };
+            const song = { album_id: album.id, name: title, rating: null, plus: false, position };
             song.id = await reqAdd(songs, song);
             position += 1;
             let i = 1;
@@ -499,6 +506,7 @@ export const api = {
                 song_id: song.id,
                 text: instrument,
                 highlight: null,
+                plus: false,
                 performer,
                 position: i,
               });
@@ -624,6 +632,7 @@ export const api = {
                 album_id: album.id,
                 name: songData.name,
                 rating: songData.rating || null,
+                plus: songData.plus || false,
                 position,
               };
               song.id = await reqAdd(songs, song);
@@ -633,6 +642,7 @@ export const api = {
                   song_id: song.id,
                   text: trait.text,
                   highlight: trait.highlight || null,
+                  plus: trait.plus || false,
                   performer: trait.performer || null,
                   position: i,
                 });

@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { RATING_TIERS, TIERS_BY_CODE } from "../ratingTiers.js";
 
-export default function RatingBadge({ rating, onChange, editable = true }) {
+export default function RatingBadge({
+  rating,
+  plus = false,
+  onChange,
+  onTogglePlus,
+  editable = true,
+}) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const current = rating ? TIERS_BY_CODE[rating] : null;
+  const label = current ? current.label + (plus ? "+" : "") : "Rate";
 
   useEffect(() => {
     if (!open) return;
@@ -23,7 +30,7 @@ export default function RatingBadge({ rating, onChange, editable = true }) {
         className={`rating-pill-badge ${current ? "" : "unrated"}`}
         style={current ? { background: current.color, color: current.text } : undefined}
       >
-        {current ? current.label : "Rate"}
+        {label}
       </span>
     );
   }
@@ -39,8 +46,22 @@ export default function RatingBadge({ rating, onChange, editable = true }) {
           setOpen((v) => !v);
         }}
       >
-        {current ? current.label : "Rate"}
+        {label}
       </button>
+      {onTogglePlus && current && (
+        <button
+          type="button"
+          className={`rating-plus-toggle ${plus ? "active" : ""}`}
+          style={plus ? { background: current.color, color: current.text } : { color: current.color }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePlus(!plus);
+          }}
+          title={plus ? "Remove the + boost" : "Mark as the strong end of this tier"}
+        >
+          +
+        </button>
+      )}
       {open && (
         <div className="rating-picker">
           {RATING_TIERS.map((tier) => (

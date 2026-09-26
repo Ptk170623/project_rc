@@ -61,7 +61,6 @@ export default function AllSongsPage() {
               song={song}
               bandName={song.band_name}
               albumName={song.album_name}
-              albumRating={song.album_rating}
               lineup={song.lineup}
               onRefresh={load}
               editable={editable}

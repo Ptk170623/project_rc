@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -11,7 +12,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
-RATING_VALUES = ("C", "B", "G", "A", "S", "M", "L", "E")
+# Amazing is the top tier: Legendary/Extraordinary were dropped as too fussy
+# to tell apart. A song (or trait) that's the strong end of its tier can
+# still stand out via `plus` instead of a whole tier above it.
+RATING_VALUES = ("C", "B", "G", "A", "M", "L")
 OPTION_KINDS = ("trait", "subtrait")
 ROTATION_DAYS = (
     "monday",
@@ -48,10 +52,8 @@ class Album(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     band_id: Mapped[int] = mapped_column(ForeignKey("bands.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    # The rating lives on the album, not per song: rating every song
-    # individually didn't scale, so a song's effective tier is just its
-    # album's rating, with an optional Strong/Less nudge on a *trait*
-    # (not the song) for anything that stood out either way.
+    # An overall rating for the album as a whole, independent of each song's
+    # own rating below.
     rating: Mapped[str | None] = mapped_column(String(1), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -76,6 +78,10 @@ class Song(Base):
     album_id: Mapped[int] = mapped_column(ForeignKey("albums.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False)
     rating: Mapped[str | None] = mapped_column(String(1), nullable=True)
+    # Marks a song as the strong end of its own tier (e.g. "Amazing+")
+    # without needing a whole tier above Amazing. Meaningless without a
+    # `rating` of its own, mirrored by `SongTrait.plus` below.
+    plus: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -100,10 +106,14 @@ class SongTrait(Base):
     # by `highlight` below. Kept only so pre-existing rows aren't dropped;
     # nothing in the app writes or reads it anymore.
     sub_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    # A trait's own rating tier (same codes as Album.rating), overriding the
-    # album's color for just this trait when set; null means "use the
-    # album's own tier" (the neutral/inherited look).
+    # A trait's own rating tier (same codes as Song.rating), overriding the
+    # song's color for just this trait when set; null means "use the song's
+    # own tier" (the neutral/inherited look).
     highlight: Mapped[str | None] = mapped_column(String(1), nullable=True)
+    # Strong end of `highlight`'s own tier, same idea as Song.plus; only
+    # meaningful once `highlight` itself is set (otherwise the trait falls
+    # back to the song's rating *and* its plus together).
+    plus: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     performer: Mapped[str | None] = mapped_column(String(200), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

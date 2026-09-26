@@ -3,13 +3,14 @@
 A personal app for actively listening to and keeping track of music,
 organized into sections:
 
-- **Ratings** — bands → albums → songs, with a rating (Like / Like So Much
-  / Meh / Good / Great / Amazing / Extraordinary / Legendary) set once per
-  album — every song in it inherits that rating — and "traits" (quick
-  notes, e.g. instruments) that can each optionally get their own tier
-  (Legendary/Amazing/Great/Good/Meh) from five always-visible buttons, no
-  popup, and be tagged with who performed it via a per-album default
-  lineup you can override per song.
+- **Ratings** — bands → albums → songs, with independent ratings at both
+  the album and the song level (Amazing / Great / Good / Meh / Like So
+  Much / Like), each with an optional "+" for the strong end of its own
+  tier — and "traits" (quick notes, e.g. instruments) that can each
+  optionally get their own tier and "+" too, picked with always-visible
+  buttons, no popup; left alone, a trait just shows its song's own rating
+  and "+". Traits can also be tagged with who performed them via a
+  per-album default lineup you can override per song.
 - **Weekly Rotation** — up to 6 bands per weekday whose discography you're
   currently working through, plus an Others catch-all for anything not
   tied to a specific day.
@@ -166,34 +167,39 @@ The home screen is a picker between the two sections below.
 - Add a band → inside the band, add an album → inside the album, add a
   song. Bands, albums, and songs can each be deleted (cascades to
   whatever they contain).
-- **The rating lives on the album, not the song.** Rating every song
-  individually didn't scale, so there's one rating pill next to the album
-  title, and every song in it just shows that same rating — set it once
-  and you're done with that album. From best to worst: Legendary,
-  Extraordinary, Amazing, Great, Good, Meh — and below those, **Like**/
-  **Like So Much**, which aren't a lower quality judgment, they're for an
-  album you haven't listened to enough times yet to give a real rating,
-  just a first impression.
+- **The album and each song are rated independently.** There's one rating
+  pill next to the album title (an overall impression of the record), and
+  a separate one on each song's banner — rating the album doesn't touch
+  any song's own rating, and vice versa. From best to worst: **Amazing**,
+  Great, Good, Meh — and below those, **Like**/**Like So Much**, which
+  aren't a lower quality judgment, they're for something you haven't
+  listened to enough times yet to give a real rating, just a first
+  impression. Amazing is the top on purpose — tapping the rating pill's
+  small circular **+** button next to it marks that album/song as the
+  strong end of its own tier (shown as "Amazing+") instead of reaching for
+  a whole tier above Amazing.
 - Each song shows up as a "banner" (a rectangle with rounded ends)
   displaying: the band and album in a small font at the top; the song name
-  in a large font below it; and the album's rating pill on the right
-  (read-only here — change it on the album, not the song).
+  in a large font below it; and the song's own rating pill (plus its "+"
+  toggle) on the right.
 - Clicking a song expands a panel to manage its "traits" (instruments or
   other things worth noting about that song):
   - The **+** button opens a quick list of options (editable) or lets you
     type free text. It stays open after each pick, so you can add several
     traits in a row without reopening it.
   - Added traits show up at the top of the banner as pill-shaped outlines,
-    tinted with the album's rating color, and appear last there (in the
+    tinted with the song's own rating color, and appear last there (in the
     order added) even though they show up first below (see next point).
-  - Each trait row has five small, always-visible tier buttons right there
-    — Legendary, Amazing, Great, Good, Meh — no popup, just tap one. The
-    outline (plus a soft glow behind it) switches to that tier's color
-    outright — a Legendary guitar solo glows gold even if the album itself
-    is only rated Good. Tapping the same tier again clears it back to just
-    showing the album's own tier color. This is the only per-song
-    adjustment there is — call out what stood out (or didn't), trait by
-    trait, instead of re-rating every song.
+  - Each trait row has six small, always-visible tier buttons right there
+    — Amazing, Great, Good, Meh, Like So Much, Like, the same set as the
+    song itself — no popup, just tap one. The outline (plus a soft glow
+    behind it) switches to that tier's color outright — a Meh vocal take
+    glows gray even if the song itself is rated Amazing. Tapping the same
+    tier again clears it back to just showing the song's own tier and "+"
+    as a unit. Once a trait has its own tier, a matching **+** button shows
+    up next to it too, independent of the song's own "+". This is the only
+    per-trait adjustment there is — call out what stood out (or didn't),
+    trait by trait, instead of re-rating every trait from scratch.
   - The list orders newest-first, so a trait you just added shows up right
     at the top to mark it without hunting for it.
   - Clicking the trait itself (not its tier buttons) opens a small editor
@@ -239,17 +245,17 @@ The home screen is a picker between the two sections below.
 ### All Songs
 
 - Every song from every band and album, flattened into one list (same
-  banner style as an album page). The rating pill shown per song is
-  always its album's rating — read-only here, same as on the album page;
-  change it on the album itself.
+  banner style as an album page), each with its own rating pill and "+"
+  toggle, editable here just like on the album page.
 - Sorted by **highest rating first** by default — a dropdown next to the
   lock button switches to lowest rating first, band/album order (grouped,
-  like flipping through your library in order), or name (A–Z). Songs
-  whose album isn't rated yet always sit at the bottom, in either rating
-  direction.
+  like flipping through your library in order), or name (A–Z). A song's
+  "+" ranks it just above other songs of the same tier. Unrated songs
+  always sit at the bottom, in either rating direction.
 - Opens **locked** by default — you can expand a song to see its traits,
-  but adding/removing traits, giving one its own rating, and deleting the
-  song are all disabled. Tap **Locked — tap to edit** to unlock editing (the
-  button turns red and reads **Editing on — tap to lock**); tap it again
-  to lock back up. The lock resets to on every time you open the page, so
-  browsing your whole library never risks an accidental change.
+  but rating the song, adding/removing traits, giving one its own rating,
+  and deleting the song are all disabled. Tap **Locked — tap to edit** to
+  unlock editing (the button turns red and reads **Editing on — tap to
+  lock**); tap it again to lock back up. The lock resets to on every time
+  you open the page, so browsing your whole library never risks an
+  accidental change.

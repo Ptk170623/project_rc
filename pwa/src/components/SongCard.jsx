@@ -6,14 +6,22 @@ import TraitEditor from "./TraitEditor.jsx";
 import TraitTierButtons from "./TraitTierButtons.jsx";
 import { effectivePerformer, tierColorFor } from "../traitColor.js";
 
-// The rating lives on the album (see AlbumPage), not per song: a song's
-// effective tier is just its album's rating. A trait can optionally carry
-// its own tier, picked inline in its row via always-visible buttons (no
-// popup needed) — that's the only per-song adjustment there is.
-export default function SongCard({ song, bandName, albumName, albumRating, lineup, onRefresh, editable = true }) {
+// Each song carries its own rating (plus an optional "+" boost). A trait
+// can optionally carry its own tier and boost, picked inline in its row via
+// always-visible buttons (no popup needed); left alone, it just shows the
+// song's own rating and boost.
+export default function SongCard({ song, bandName, albumName, lineup, onRefresh, editable = true }) {
   const [expanded, setExpanded] = useState(false);
   const [showAddTrait, setShowAddTrait] = useState(false);
   const [editingTraitId, setEditingTraitId] = useState(null);
+
+  const saveSong = async (patch) => {
+    await api.updateSong(song.id, patch);
+    onRefresh();
+  };
+
+  const changeSongRating = (rating) => saveSong(rating ? { rating } : { clear_rating: true });
+  const toggleSongPlus = (plus) => saveSong({ plus });
 
   const addTrait = async (text) => {
     await api.addTrait(song.id, text);
@@ -30,6 +38,8 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
     saveTrait(traitId, rating ? { highlight: rating } : { clear_highlight: true });
   };
 
+  const toggleTraitPlus = (traitId, plus) => saveTrait(traitId, { plus });
+
   const removeTrait = async (traitId, e) => {
     e.stopPropagation();
     await api.deleteTrait(traitId);
@@ -45,7 +55,7 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
   };
 
   const renderChip = (t) => {
-    const tier = tierColorFor(albumRating, t.highlight);
+    const tier = tierColorFor(song.rating, song.plus, t.highlight, t.plus);
     const performer = effectivePerformer(t, lineup);
     const style = tier ? { "--trait-color": tier.color } : undefined;
     return (
@@ -55,7 +65,10 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
         style={style}
       >
         {performer && <span className="trait-chip-person">{performer}</span>}
-        <span className="trait-chip-text">{t.text}</span>
+        <span className="trait-chip-text">
+          {t.text}
+          {tier?.plus && <span className="trait-chip-plus">+</span>}
+        </span>
       </span>
     );
   };
@@ -71,7 +84,13 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
         </div>
         <div className="song-pill-main">
           <span className="song-name">{song.name}</span>
-          <RatingBadge rating={albumRating} editable={false} />
+          <RatingBadge
+            rating={song.rating}
+            plus={song.plus}
+            onChange={changeSongRating}
+            onTogglePlus={toggleSongPlus}
+            editable={editable}
+          />
         </div>
       </div>
 
@@ -115,7 +134,9 @@ export default function SongCard({ song, bandName, albumName, albumRating, lineu
                       <div className="trait-detail-controls">
                         <TraitTierButtons
                           highlight={t.highlight}
+                          plus={t.plus}
                           onChange={(rating) => setTraitTier(t.id, rating)}
+                          onTogglePlus={(plus) => toggleTraitPlus(t.id, plus)}
                         />
                         <button
                           className="btn btn-small btn-danger"
