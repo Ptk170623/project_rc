@@ -186,12 +186,14 @@ The home screen is a picker between the two sections below.
     there — Like So Much, Like, Meh, the same set as the song itself — no
     popup, just tap one. The outline (plus a soft glow behind it) switches
     to that tier's color outright, independent of the song's own tier.
-    Tapping the same tier again clears it back to just showing the song's
-    own tier and "+" as a unit. Once a trait has its own tier, a matching
-    **+** button shows up next to it too, independent of the song's own
-    "+". This is the only per-trait adjustment there is — call out what
-    stood out (or didn't), trait by trait, instead of re-tagging every
-    trait from scratch.
+    Tapping the same tier again clears it back to just inheriting the
+    song's own tier.
+  - Right next to those, a **+** button is always there too — independent
+    of the tier buttons, so you can highlight a trait while it still just
+    shows the song's own tier, no need to also give it a separate tier of
+    its own just to unlock the "+". This is the only per-trait adjustment
+    there is — call out what stood out (or didn't), trait by trait,
+    instead of re-tagging every trait from scratch.
   - The list orders newest-first, so a trait you just added shows up right
     at the top to mark it without hunting for it.
   - Clicking the trait itself (not its tier buttons) opens a small editor

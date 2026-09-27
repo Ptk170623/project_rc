@@ -332,10 +332,8 @@ export const api = {
       const trait = await reqGet(store, Number(traitId));
       if (!trait) throw notFound("Trait");
       if (payload.text != null) trait.text = payload.text;
-      if (payload.clear_highlight) {
-        trait.highlight = null;
-        trait.plus = false;
-      } else if (payload.highlight != null) trait.highlight = payload.highlight;
+      if (payload.clear_highlight) trait.highlight = null;
+      else if (payload.highlight != null) trait.highlight = payload.highlight;
       if (payload.plus != null) trait.plus = payload.plus;
       if (payload.clear_performer) trait.performer = null;
       else if (payload.performer != null) trait.performer = payload.performer;

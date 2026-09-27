@@ -113,9 +113,9 @@ class SongTrait(Base):
     # song's color for just this trait when set; null means "use the song's
     # own tier" (the neutral/inherited look).
     highlight: Mapped[str | None] = mapped_column(String(1), nullable=True)
-    # Strong end of `highlight`'s own tier, same idea as Song.plus; only
-    # meaningful once `highlight` itself is set (otherwise the trait falls
-    # back to the song's rating *and* its plus together).
+    # Marks this trait as standing out, independent of `highlight`: a trait
+    # can be flagged this way while still just showing the song's own tier
+    # (no need to also give it a separate tier of its own to highlight it).
     plus: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     performer: Mapped[str | None] = mapped_column(String(200), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0)

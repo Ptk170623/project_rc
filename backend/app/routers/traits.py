@@ -41,7 +41,6 @@ def update_trait(trait_id: int, payload: schemas.SongTraitUpdate, db: Session = 
         trait.text = payload.text.strip()
     if payload.clear_highlight:
         trait.highlight = None
-        trait.plus = False
     elif payload.highlight is not None:
         trait.highlight = payload.highlight
     if payload.plus is not None:

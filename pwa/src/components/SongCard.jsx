@@ -4,12 +4,14 @@ import RatingBadge from "./RatingBadge.jsx";
 import QuickPicker from "./QuickPicker.jsx";
 import TraitEditor from "./TraitEditor.jsx";
 import TraitTierButtons from "./TraitTierButtons.jsx";
-import { effectivePerformer, tierColorFor } from "../traitColor.js";
+import { effectivePerformer, effectiveTier, tierColorFor } from "../traitColor.js";
 
 // Each song carries its own rating (plus an optional "+" boost). A trait
-// can optionally carry its own tier and boost, picked inline in its row via
+// can optionally carry its own tier, picked inline in its row via
 // always-visible buttons (no popup needed); left alone, it just shows the
-// song's own rating and boost.
+// song's own rating. A trait's "+" is independent of that — it can be
+// toggled either way, whether the trait has a tier of its own or is just
+// inheriting the song's.
 export default function SongCard({ song, bandName, albumName, lineup, onRefresh, editable = true }) {
   const [expanded, setExpanded] = useState(false);
   const [showAddTrait, setShowAddTrait] = useState(false);
@@ -55,7 +57,7 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh,
   };
 
   const renderChip = (t) => {
-    const tier = tierColorFor(song.rating, song.plus, t.highlight, t.plus);
+    const tier = tierColorFor(song.rating, t.highlight, t.plus);
     const performer = effectivePerformer(t, lineup);
     const style = tier ? { "--trait-color": tier.color } : undefined;
     return (
@@ -135,6 +137,7 @@ export default function SongCard({ song, bandName, albumName, lineup, onRefresh,
                         <TraitTierButtons
                           highlight={t.highlight}
                           plus={t.plus}
+                          effectiveTier={effectiveTier(song.rating, t.highlight)}
                           onChange={(rating) => setTraitTier(t.id, rating)}
                           onTogglePlus={(plus) => toggleTraitPlus(t.id, plus)}
                         />

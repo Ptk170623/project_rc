@@ -1,13 +1,14 @@
-import { RATING_TIERS, TIERS_BY_CODE } from "../ratingTiers.js";
+import { RATING_TIERS } from "../ratingTiers.js";
 
 // A trait's classification, always visible inline (no popup): one short
 // button per tier (same set as the song's own rating), each tinted in its
 // own color, filled when active. Tapping the active one again clears it
-// back to just inheriting the song's own tier. A separate "+" toggle only
-// shows once the trait has its own tier, mirroring the song's own boost.
-export default function TraitTierButtons({ highlight, plus, onChange, onTogglePlus }) {
-  const activeTier = highlight ? TIERS_BY_CODE[highlight] : null;
-
+// back to just inheriting the song's own tier. The "+" toggle is
+// independent of that choice — it shows as long as there's some tier to
+// highlight (the trait's own, or the song's), so a trait can be marked as
+// standing out while still just inheriting the song's tier, no need to
+// also give it a separate tier of its own.
+export default function TraitTierButtons({ highlight, plus, effectiveTier, onChange, onTogglePlus }) {
   return (
     <div className="trait-tier-buttons">
       {RATING_TIERS.map((tier) => {
@@ -31,14 +32,14 @@ export default function TraitTierButtons({ highlight, plus, onChange, onTogglePl
           </button>
         );
       })}
-      {activeTier && (
+      {effectiveTier && (
         <button
           type="button"
           className={`trait-tier-btn trait-tier-plus ${plus ? "active" : ""}`}
           style={
             plus
-              ? { background: activeTier.color, borderColor: activeTier.color, color: activeTier.text }
-              : { borderColor: activeTier.color, color: activeTier.color }
+              ? { background: effectiveTier.color, borderColor: effectiveTier.color, color: effectiveTier.text }
+              : { borderColor: effectiveTier.color, color: effectiveTier.color }
           }
           onClick={(e) => {
             e.stopPropagation();
