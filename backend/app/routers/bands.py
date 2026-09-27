@@ -52,7 +52,6 @@ def export_band(band_id: int, db: Session = Depends(get_db)):
             albums=[
                 schemas.AlbumExport(
                     name=album.name,
-                    rating=album.rating,
                     lineup=[
                         schemas.LineupExport(instrument=e.instrument, performer=e.performer)
                         for e in album.lineup
@@ -61,9 +60,13 @@ def export_band(band_id: int, db: Session = Depends(get_db)):
                         schemas.SongExport(
                             name=song.name,
                             rating=song.rating,
+                            plus=song.plus,
                             traits=[
                                 schemas.TraitExport(
-                                    text=t.text, highlight=t.highlight, performer=t.performer
+                                    text=t.text,
+                                    highlight=t.highlight,
+                                    plus=t.plus,
+                                    performer=t.performer,
                                 )
                                 for t in song.traits
                             ],

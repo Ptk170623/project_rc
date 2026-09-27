@@ -9,18 +9,13 @@ export default function SectionsPage() {
       <div className="section-grid">
         <Link to="/ratings" className="section-card ratings">
           <div className="icon">🎧</div>
-          <h3>Ratings</h3>
-          <p>Bands → albums → songs. Rate tracks and log traits as you listen.</p>
+          <h3>Listening Log</h3>
+          <p>Bands → albums → songs. Jot down traits and a quick Like/Meh as you listen.</p>
         </Link>
         <Link to="/rotation" className="section-card rotation">
           <div className="icon">🔁</div>
           <h3>Weekly Rotation</h3>
           <p>What you're spinning each day, plus an Others list for loose picks.</p>
-        </Link>
-        <Link to="/songs" className="section-card all-songs">
-          <div className="icon">🎵</div>
-          <h3>All Songs</h3>
-          <p>Every song from every band in one list, with an edit lock to browse safely.</p>
         </Link>
       </div>
     </div>

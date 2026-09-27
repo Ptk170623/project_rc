@@ -6,11 +6,14 @@ from . import models
 from .database import Base, SessionLocal, engine
 from .routers import albums, bands, imports, lineup, options, rotation, songs, traits
 
-# Dropped when the top tier became Amazing (a "+" on the song/trait itself
-# covers what Legendary/Extraordinary used to). Existing rows carrying
-# either code get nulled out by the migrations below, same treatment as any
-# other value that stops being valid.
-_DROPPED_RATING_CODES = ("S", "E")
+# Every rating code this app has ever used, past and present — used to spot
+# a table whose CHECK constraint still allows a code that's since been
+# dropped from RATING_VALUES (rows carrying it get nulled out by the
+# migrations below, same treatment as any other value that stops being
+# valid). Extend this set if a future round ever needs a code retired that
+# isn't already listed here; it never needs codes removed.
+_ALL_RATING_CODES_EVER = ("C", "B", "G", "A", "S", "M", "L", "E")
+_DROPPED_RATING_CODES = tuple(c for c in _ALL_RATING_CODES_EVER if c not in models.RATING_VALUES)
 
 DEFAULT_TRAIT_OPTIONS = [
     "Vocal",
@@ -45,7 +48,9 @@ def _start_song_rating_migration() -> bool:
             text("SELECT sql FROM sqlite_master WHERE type='table' AND name='songs'")
         ).fetchone()
         current_sql = row[0] if row else ""
-        if "plus" in current_sql:
+        if "plus" in current_sql and not any(
+            f"'{value}'" in current_sql for value in _DROPPED_RATING_CODES
+        ):
             return False  # already on the current schema
         conn.execute(text("ALTER TABLE songs RENAME TO songs_pre_migration"))
         conn.commit()
@@ -125,7 +130,9 @@ def _start_trait_highlight_migration() -> bool:
             text("SELECT sql FROM sqlite_master WHERE type='table' AND name='song_traits'")
         ).fetchone()
         current_sql = row[0] if row else ""
-        if "plus" in current_sql:
+        if "plus" in current_sql and not any(
+            f"'{value}'" in current_sql for value in _DROPPED_RATING_CODES
+        ):
             return False  # already on the current schema
         conn.execute(text("ALTER TABLE song_traits RENAME TO song_traits_pre_migration"))
         conn.commit()

@@ -12,10 +12,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
-# Amazing is the top tier: Legendary/Extraordinary were dropped as too fussy
-# to tell apart. A song (or trait) that's the strong end of its tier can
-# still stand out via `plus` instead of a whole tier above it.
-RATING_VALUES = ("C", "B", "G", "A", "M", "L")
+# This app isn't for grading music, just a quick note of how a song landed
+# while listening — Like So Much, Like, or Meh, and nothing more granular
+# than that. `plus` (below) covers wanting to say a bit more without
+# turning it back into a rating scale.
+RATING_VALUES = ("M", "L", "C")
 OPTION_KINDS = ("trait", "subtrait")
 ROTATION_DAYS = (
     "monday",
@@ -52,8 +53,9 @@ class Album(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     band_id: Mapped[int] = mapped_column(ForeignKey("bands.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    # An overall rating for the album as a whole, independent of each song's
-    # own rating below.
+    # Unused: albums no longer carry a rating of their own (only songs and
+    # traits do). Left in place rather than dropped so existing rows aren't
+    # disturbed; nothing reads or writes it anymore.
     rating: Mapped[str | None] = mapped_column(String(1), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -78,9 +80,10 @@ class Song(Base):
     album_id: Mapped[int] = mapped_column(ForeignKey("albums.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False)
     rating: Mapped[str | None] = mapped_column(String(1), nullable=True)
-    # Marks a song as the strong end of its own tier (e.g. "Amazing+")
-    # without needing a whole tier above Amazing. Meaningless without a
-    # `rating` of its own, mirrored by `SongTrait.plus` below.
+    # Marks a song as the strong end of its own tier (e.g. "Like So Much+")
+    # for when a plain tier doesn't feel like enough, without adding a whole
+    # tier of its own. Meaningless without a `rating` of its own, mirrored
+    # by `SongTrait.plus` below.
     plus: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

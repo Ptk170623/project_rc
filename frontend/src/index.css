@@ -76,13 +76,6 @@ body {
   font-size: 28px;
 }
 
-.page-header-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .page-header-actions {
   display: flex;
   gap: 10px;
@@ -158,20 +151,6 @@ body {
   min-width: 200px;
 }
 .inline-add-form input:focus {
-  outline: 2px solid var(--accent);
-}
-
-.sort-select {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 9px 12px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-}
-.sort-select:focus {
   outline: 2px solid var(--accent);
 }
 
@@ -713,9 +692,6 @@ body {
 }
 .section-card.rotation .icon {
   background: rgba(236, 72, 153, 0.18);
-}
-.section-card.all-songs .icon {
-  background: rgba(74, 144, 217, 0.18);
 }
 .section-card h3 {
   margin: 0;

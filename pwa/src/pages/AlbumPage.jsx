@@ -4,7 +4,6 @@ import { api } from "../api.js";
 import InlineAddForm from "../components/InlineAddForm.jsx";
 import SongCard from "../components/SongCard.jsx";
 import LineupEditor from "../components/LineupEditor.jsx";
-import RatingBadge from "../components/RatingBadge.jsx";
 import { downloadImportTemplate } from "../importTemplate.js";
 import { downloadJSON, safeFileSlug } from "../downloadFile.js";
 
@@ -50,11 +49,6 @@ export default function AlbumPage() {
     downloadJSON(`album-${safeFileSlug(album.band_name)}-${safeFileSlug(album.name)}.json`, data);
   };
 
-  const changeAlbumRating = async (rating) => {
-    await api.updateAlbum(albumId, rating ? { rating } : { clear_rating: true });
-    load();
-  };
-
   if (loading) return <p className="empty-hint">Loading…</p>;
   if (!album) return <p className="empty-hint">Album not found.</p>;
 
@@ -64,10 +58,7 @@ export default function AlbumPage() {
         ← {album.band_name}
       </Link>
       <div className="page-header">
-        <div className="page-header-title">
-          <h1>{album.name}</h1>
-          <RatingBadge rating={album.rating} onChange={changeAlbumRating} />
-        </div>
+        <h1>{album.name}</h1>
         <div className="page-header-actions">
           <InlineAddForm
             label="Add song"

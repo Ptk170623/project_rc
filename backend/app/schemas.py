@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-Rating = Literal["C", "B", "G", "A", "M", "L"]
+Rating = Literal["M", "L", "C"]
 OptionKind = Literal["trait", "subtrait"]
 RotationDay = Literal[
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "others"
@@ -65,19 +65,12 @@ class AlbumCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
 
 
-class AlbumUpdate(BaseModel):
-    name: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    rating: Optional[Rating] = None
-    clear_rating: bool = False
-
-
 class AlbumRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     band_id: int
     name: str
-    rating: Optional[str] = None
 
 
 # ---------- AlbumLineup ----------
@@ -104,14 +97,6 @@ class AlbumLineupRead(BaseModel):
 class AlbumDetail(AlbumRead):
     band_name: str
     songs: list[SongRead] = []
-    lineup: list[AlbumLineupRead] = []
-
-
-# ---------- Song, with its band/album context (for the All Songs list) ----------
-class SongWithContext(SongRead):
-    band_id: int
-    band_name: str
-    album_name: str
     lineup: list[AlbumLineupRead] = []
 
 
@@ -148,7 +133,6 @@ class LineupExport(BaseModel):
 
 class AlbumExport(BaseModel):
     name: str
-    rating: Optional[Rating] = None
     lineup: list[LineupExport] = []
     songs: list[SongExport] = []
 
