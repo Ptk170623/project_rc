@@ -2,17 +2,34 @@
 // list: within the albums matching that segmenter's tag, rank by a score
 // combining (a) how long it's been since the album was last listened to —
 // an album you've never listened to ranks like it's been NEVER_LISTENED_DAYS
-// since, so it's always near the top — and (b) a bonus from the album's
-// current manual position in the list (the drag-and-drop order), so
-// something you've already nudged toward the front carries that forward
-// into the subgenre ranking too, instead of only recency mattering.
+// since, so it's always near the top — (b) a bonus from the album's current
+// manual position in the list (the drag-and-drop order), so something
+// you've already nudged toward the front carries that forward into the
+// subgenre ranking too, instead of only recency mattering — and (c) a bonus
+// from the album's own importance level, a direct "listen to this more/less
+// often" dial independent of recency or manual position.
 //
-// POSITION_WEIGHT_DAYS is the one constant to retune if this doesn't feel
-// right: it says "being N slots higher in the manual order is worth N days
-// of not having listened." Raise it to let manual ordering dominate more;
-// lower it (towards 0) to let recency dominate instead.
+// POSITION_WEIGHT_DAYS and IMPORTANCE_WEIGHT_DAYS are the constants to
+// retune if the balance doesn't feel right — both read as "worth N days of
+// not having listened." Position: raise it to let manual ordering dominate
+// more; lower it (towards 0) to let recency dominate instead. Importance:
+// "novo" is deliberately huge, so a new album keeps winning its subgenre's
+// pick almost regardless of recency until it's graduated out of "novo"
+// (see IMPORTANCE_GRADUATION_LISTENS in api.js) or you reclassify it
+// yourself; "menos" is negative, so it still surfaces eventually but only
+// once everything else in its subgenre has had a turn.
 export const NEVER_LISTENED_DAYS = 36500; // ~100 years: always ranks first
 export const POSITION_WEIGHT_DAYS = 1;
+
+export const IMPORTANCE_LEVELS = ["novo", "importante", "normal", "menos"];
+export const DEFAULT_IMPORTANCE = "novo";
+
+export const IMPORTANCE_WEIGHT_DAYS = {
+  novo: 365,
+  importante: 60,
+  normal: 0,
+  menos: -30,
+};
 
 export function daysSince(isoDate, now = new Date()) {
   if (!isoDate) return NEVER_LISTENED_DAYS;
@@ -27,6 +44,14 @@ export function positionBonus(index, total) {
   return Math.max(0, total - 1 - index) * POSITION_WEIGHT_DAYS;
 }
 
+export function importanceBonus(importance) {
+  return IMPORTANCE_WEIGHT_DAYS[importance] ?? IMPORTANCE_WEIGHT_DAYS.normal;
+}
+
 export function priorityScore(album, index, total, now = new Date()) {
-  return daysSince(album.last_listened_at, now) + positionBonus(index, total);
+  return (
+    daysSince(album.last_listened_at, now) +
+    positionBonus(index, total) +
+    importanceBonus(album.importance)
+  );
 }

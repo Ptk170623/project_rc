@@ -1,13 +1,28 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+const IMPORTANCE_OPTIONS = [
+  { value: "novo", label: "New" },
+  { value: "importante", label: "Important" },
+  { value: "normal", label: "Normal" },
+  { value: "menos", label: "Less" },
+];
+
 function formatLastListened(iso) {
   if (!iso) return "Never listened";
   const date = new Date(iso);
   return `Last listened ${date.toLocaleDateString()}`;
 }
 
-export default function AlbumCard({ album, specificLabel, genericLabel, onEdit, onListen, onMoveTop }) {
+export default function AlbumCard({
+  album,
+  specificLabel,
+  genericLabel,
+  onEdit,
+  onListen,
+  onMoveTop,
+  onImportanceChange,
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: album.id,
   });
@@ -42,7 +57,22 @@ export default function AlbumCard({ album, specificLabel, genericLabel, onEdit, 
             {genericLabel && <span className="album-tag generic">{genericLabel}</span>}
           </div>
         )}
-        <span className="album-listened">{formatLastListened(album.last_listened_at)}</span>
+        <div className="album-meta-row">
+          <span className="album-listened">{formatLastListened(album.last_listened_at)}</span>
+          <select
+            className={`importance-badge importance-${album.importance || "normal"}`}
+            value={album.importance || "normal"}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => onImportanceChange(album.id, e.target.value)}
+            title="Importance"
+          >
+            {IMPORTANCE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="album-actions">

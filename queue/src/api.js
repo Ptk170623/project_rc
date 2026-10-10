@@ -8,7 +8,12 @@ import {
   reqPut,
   withStore,
 } from "./db.js";
-import { priorityScore } from "./priority.js";
+import { DEFAULT_IMPORTANCE, priorityScore } from "./priority.js";
+
+// A "novo" album graduates to "normal" automatically once it's been
+// listened to this many times — it's no longer new, and from then on it's
+// up to you to reclassify it (importante/normal/menos) as you like.
+const IMPORTANCE_GRADUATION_LISTENS = 3;
 
 function notFound(what) {
   const err = new Error(`${what} not found`);
@@ -128,6 +133,7 @@ export const api = {
         subgenre_id: subgenre_id ?? null,
         subgenre_generic_id: subgenre_generic_id ?? null,
         image: image ?? null,
+        importance: DEFAULT_IMPORTANCE,
         position: maxField(existing, "position") + 1,
         last_listened_at: null,
         listen_history: [],
@@ -146,11 +152,25 @@ export const api = {
       if ("subgenre_id" in patch) album.subgenre_id = patch.subgenre_id;
       if ("subgenre_generic_id" in patch) album.subgenre_generic_id = patch.subgenre_generic_id;
       if ("image" in patch) album.image = patch.image;
+      if (patch.importance != null) album.importance = patch.importance;
       await reqPut(store, album);
       return album;
     }),
 
   deleteAlbum: (id) => withStore("albums", "readwrite", (store) => reqDelete(store, Number(id))),
+
+  // Importance feeds straight into the priority score (see priority.js),
+  // so changing it re-pins the list the same way a segmenter quantity
+  // change does.
+  setImportance: async (id, importance) => {
+    await withStore("albums", "readwrite", async (store) => {
+      const album = await reqGet(store, Number(id));
+      if (!album) throw notFound("Album");
+      album.importance = importance;
+      await reqPut(store, album);
+    });
+    await recomputeOrder();
+  },
 
   // Marks the album listened now (logged in its history), sends it to the
   // back of the list, and drains one unit from any active segmenter whose
@@ -165,6 +185,12 @@ export const api = {
         const now = new Date().toISOString();
         album.last_listened_at = now;
         album.listen_history = [...(album.listen_history || []), now];
+        if (
+          (album.importance ?? DEFAULT_IMPORTANCE) === "novo" &&
+          album.listen_history.length >= IMPORTANCE_GRADUATION_LISTENS
+        ) {
+          album.importance = "normal";
+        }
         const all = await reqAll(albums);
         album.position = maxField(all, "position") + 1;
         await reqPut(albums, album);
@@ -343,6 +369,7 @@ export const api = {
               ? { kind: "generic", label: labelById.get(a.subgenre_generic_id).label }
               : null,
             image: a.image ? await blobToDataURL(a.image) : null,
+            importance: a.importance || "normal",
             last_listened_at: a.last_listened_at,
             listen_history: a.listen_history || [],
           });
@@ -408,6 +435,7 @@ export const api = {
             subgenre_id: subgenreLabel ? subgenreLabel.id : null,
             subgenre_generic_id: genericLabel ? genericLabel.id : null,
             image: a.image ? await dataURLToBlob(a.image) : null,
+            importance: a.importance || "normal",
             position,
             last_listened_at: a.last_listened_at || null,
             listen_history: a.listen_history || [],

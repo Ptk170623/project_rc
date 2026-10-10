@@ -106,6 +106,11 @@ export default function App() {
     load();
   };
 
+  const handleImportanceChange = async (id, importance) => {
+    await api.setImportance(id, importance);
+    load();
+  };
+
   const handleSegmenterReorder = async (kind, orderedLabelIds) => {
     await api.reorderSegmenters(kind, orderedLabelIds);
     load();
@@ -161,6 +166,7 @@ export default function App() {
           onListen={handleListen}
           onMoveTop={handleMoveTop}
           onReorder={handleReorder}
+          onImportanceChange={handleImportanceChange}
         />
       </main>
 

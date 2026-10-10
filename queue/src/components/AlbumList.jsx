@@ -2,7 +2,15 @@ import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from 
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import AlbumCard from "./AlbumCard.jsx";
 
-export default function AlbumList({ albums, labelsById, onEdit, onListen, onMoveTop, onReorder }) {
+export default function AlbumList({
+  albums,
+  labelsById,
+  onEdit,
+  onListen,
+  onMoveTop,
+  onReorder,
+  onImportanceChange,
+}) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
@@ -33,6 +41,7 @@ export default function AlbumList({ albums, labelsById, onEdit, onListen, onMove
               onEdit={onEdit}
               onListen={onListen}
               onMoveTop={onMoveTop}
+              onImportanceChange={onImportanceChange}
             />
           ))}
         </ul>

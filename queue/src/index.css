@@ -360,7 +360,42 @@ textarea:focus {
 .album-listened {
   font-size: 10px;
   color: var(--text-dim);
+}
+.album-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   margin-top: 2px;
+}
+.importance-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.importance-badge.importance-novo {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #1a1206;
+}
+.importance-badge.importance-importante {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.importance-badge.importance-normal {
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+.importance-badge.importance-menos {
+  border-color: var(--border);
+  color: var(--text-dim);
 }
 
 .album-actions {

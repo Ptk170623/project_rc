@@ -59,11 +59,29 @@ by *days since it was last listened to* (never-listened albums score as if
 it's been ~100 years, so they're always near the top of their subgenre)
 *plus a bonus from its current position* in the manually-arranged list —
 being near the top of your own hand-arranged order carries weight into the
-subgenre ranking too, not just recency. `POSITION_WEIGHT_DAYS` in that file
-is the one constant to retune if the mix feels off (it reads as "being N
-slots higher is worth N days of not having listened"); this was the part
-of the spec that was explicitly a judgment call, so don't hesitate to
-change it.
+subgenre ranking too, not just recency — *plus a bonus from its importance
+level* (see below). `POSITION_WEIGHT_DAYS` and `IMPORTANCE_WEIGHT_DAYS` in
+that file are the constants to retune if the mix feels off (each reads as
+"worth N days of not having listened"); this was the part of the spec that
+was explicitly a judgment call, so don't hesitate to change it.
+
+## Importance
+
+Every album also carries an **importance** level, picked from the small
+badge/dropdown on its card: **New**, **Important**, **Normal**, or **Less**.
+It feeds straight into the ranking formula above as a flat bonus (see
+`IMPORTANCE_WEIGHT_DAYS` in `src/priority.js`) — **New** is weighted heavily
+so a freshly-added album keeps winning its subgenre's pick almost
+regardless of recency; **Important** gives a smaller nudge; **Normal** is
+neutral; **Less** is a penalty, so it still surfaces eventually but only
+once everything else in its subgenre has had a turn.
+
+A newly-added album starts at **New** automatically, and graduates to
+**Normal** on its own once you've marked it listened 3 times (tune this via
+`IMPORTANCE_GRADUATION_LISTENS` in `src/api.js`) — the idea being it only
+needs the "listen to this a lot" push while it's genuinely new. You can
+always override the level by hand at any point, on any album, and that
+sticks until you change it again.
 
 ## Data model (IndexedDB, `src/db.js`)
 
