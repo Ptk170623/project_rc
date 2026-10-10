@@ -23,6 +23,13 @@ There are two versions in this repository:
   installable as an app on your phone. Documented in [Offline PWA
   version](#offline-pwa-version-pwa-folder).
 
+This repository also hosts a second, independent app — **[`queue/`
+(Listening Queue)](queue/README.md)**: a single-screen queue of albums you
+mean to listen to (not a listening log), with drag-to-reorder, cover
+images, and subgenre-weighted "pull these to the front" segmenters. It
+shares no data with Music Journal and is deployed alongside it — see
+**Deploying both apps** below.
+
 ## Running locally
 
 ### 1. Backend
@@ -103,27 +110,37 @@ This version is just static files (HTML/JS/CSS), nothing running on a
 server, so it's published automatically to **GitHub Pages** — for free,
 with HTTPS, and with no need for the computer to be on afterwards.
 
-There's already a workflow (`.github/workflows/deploy-pwa.yml`) that
-builds and publishes `pwa/` whenever something changes in that folder (or
-it can be triggered manually from the repository's **Actions** tab with
-"Run workflow").
+#### Deploying both apps
+
+One workflow (`.github/workflows/deploy-pages.yml`) builds **both** PWAs
+in this repo and publishes them to the same GitHub Pages site: `pwa/`
+(Music Journal) at the domain root, `queue/` (Listening Queue, see
+[queue/README.md](queue/README.md)) under `/queue/`. Each app builds
+independently — a change to one never affects the other's build — and
+only the final step combines their two `dist/` folders into one upload.
+It runs on any push touching `pwa/`, `queue/`, or the workflow file
+itself (or manually, from the repository's **Actions** tab with "Run
+workflow").
 
 Already configured (public repository + `Settings → Pages → Source:
-GitHub Actions`). Every push touching `pwa/` publishes on its own to:
+GitHub Actions`). A qualifying push publishes to:
 
 ```
-https://ptk170623.github.io/project_rc/
+https://ptk170623.github.io/project_rc/         (Music Journal)
+https://ptk170623.github.io/project_rc/queue/   (Listening Queue)
 ```
 
-Once published, open that URL on your phone and use "Add to Home Screen"
-(or the **Install app** button that shows up at the top, on Chrome
-Android) — from then on the app becomes its own icon, works offline, and
-data is saved in your phone's storage.
+Once published, open either URL on your phone and use "Add to Home
+Screen" (or the **Install app** button that shows up at the top, on
+Chrome Android) — from then on that app becomes its own icon, works
+offline, and data is saved in your phone's storage. The two are
+installed as separate apps with separate storage, even though they're
+served from the same site.
 
 Prefer another host (Cloudflare Pages, Netlify, Vercel)? It works the same
-way: build with `npm run build` inside `pwa/` and publish the `pwa/dist/`
-folder — just adjust `VITE_BASE_PATH` in `vite.config.js` if the app isn't
-served from the domain root.
+way: build each app with `npm run build` (inside `pwa/` and/or `queue/`)
+and publish its `dist/` folder — adjust `VITE_BASE_PATH` in that app's
+`vite.config.js` if it isn't served from the domain root.
 
 Important: since the service worker and "install app" require a secure
 connection (HTTPS), opening the app directly via a local IP

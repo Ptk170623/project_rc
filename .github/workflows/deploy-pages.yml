@@ -1,0 +1,80 @@
+name: Deploy PWAs to GitHub Pages
+
+# Publishes both offline PWAs from this repo to the same GitHub Pages site:
+# pwa/ (Music Journal) at the domain root, queue/ (Listening Queue) under
+# /queue/. Each has its own independent build; only the final artifact
+# upload combines them, so one app's build never affects the other's.
+on:
+  push:
+    branches: [claude/music-analysis-app-7ojsf6]
+    paths:
+      - "pwa/**"
+      - "queue/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            pwa/package-lock.json
+            queue/package-lock.json
+
+      - name: Install Music Journal dependencies
+        working-directory: pwa
+        run: npm ci
+
+      - name: Build Music Journal
+        working-directory: pwa
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /project_rc/
+
+      - name: Install Listening Queue dependencies
+        working-directory: queue
+        run: npm ci
+
+      - name: Build Listening Queue
+        working-directory: queue
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /project_rc/queue/
+
+      - name: Combine into one Pages artifact
+        run: |
+          mkdir -p combined-site
+          cp -r pwa/dist/. combined-site/
+          mkdir -p combined-site/queue
+          cp -r queue/dist/. combined-site/queue/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: combined-site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -14,6 +14,11 @@ pwa/node_modules/
 pwa/dist/
 pwa/dev-dist/
 
+# Listening Queue (separate app)
+queue/node_modules/
+queue/dist/
+queue/dev-dist/
+
 # OS / editor
 .DS_Store
 *.swp
