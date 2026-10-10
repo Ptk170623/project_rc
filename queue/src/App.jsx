@@ -3,6 +3,7 @@ import { api } from "./api.js";
 import InstallButton from "./components/InstallButton.jsx";
 import ExportImportMenu from "./components/ExportImportMenu.jsx";
 import SearchBar from "./components/SearchBar.jsx";
+import SubgenreFilter from "./components/SubgenreFilter.jsx";
 import SegmenterRow from "./components/SegmenterRow.jsx";
 import AlbumList from "./components/AlbumList.jsx";
 import AlbumFormModal from "./components/AlbumFormModal.jsx";
@@ -16,6 +17,7 @@ export default function App() {
   const [genericSegmenters, setGenericSegmenters] = useState([]);
   const [bandNames, setBandNames] = useState([]);
   const [search, setSearch] = useState("");
+  const [subgenreFilter, setSubgenreFilter] = useState(null); // "specific-<id>" | "generic-<id>" | null
   const [loading, setLoading] = useState(true);
 
   const [showAddAlbum, setShowAddAlbum] = useState(false);
@@ -65,11 +67,20 @@ export default function App() {
 
   const visibleAlbums = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return albums;
-    return albums.filter(
-      (a) => a.name.toLowerCase().includes(q) || (a.band_name || "").toLowerCase().includes(q)
-    );
-  }, [albums, search]);
+    let result = albums;
+    if (q) {
+      result = result.filter(
+        (a) => a.name.toLowerCase().includes(q) || (a.band_name || "").toLowerCase().includes(q)
+      );
+    }
+    if (subgenreFilter) {
+      const [kind, idStr] = subgenreFilter.split("-");
+      const id = Number(idStr);
+      const field = kind === "specific" ? "subgenre_id" : "subgenre_generic_id";
+      result = result.filter((a) => a[field] === id);
+    }
+    return result;
+  }, [albums, search, subgenreFilter]);
 
   const handleListen = async (id) => {
     await api.markListened(id);
@@ -116,7 +127,15 @@ export default function App() {
       </header>
 
       <main className="content">
-        <SearchBar value={search} onChange={setSearch} />
+        <div className="search-filter-row">
+          <SearchBar value={search} onChange={setSearch} />
+          <SubgenreFilter
+            specificLabels={specificLabels}
+            genericLabels={genericLabels}
+            value={subgenreFilter}
+            onChange={setSubgenreFilter}
+          />
+        </div>
 
         <SegmenterRow
           kind="specific"

@@ -141,14 +141,26 @@ textarea:focus {
 }
 
 /* Search */
-.search-bar {
-  width: 100%;
+.search-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 14px;
+}
+.search-bar {
+  flex: 1;
+  min-width: 160px;
 }
 .search-bar input {
   width: 100%;
   padding: 10px 14px;
   border-radius: 999px;
+}
+.subgenre-filter {
+  flex: 1;
+  min-width: 140px;
+  border-radius: 999px;
+  padding: 10px 14px;
 }
 
 /* Segmenter bar */
@@ -175,13 +187,9 @@ textarea:focus {
 
 .segmenter-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 10px;
   margin-bottom: 14px;
-}
-.segmenter-row::-webkit-scrollbar {
-  height: 4px;
 }
 
 .segmenter-chip {

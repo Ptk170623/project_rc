@@ -1,5 +1,5 @@
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter } from "@dnd-kit/core";
-import { SortableContext, horizontalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { SortableContext, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import SegmenterChip from "./SegmenterChip.jsx";
 
 export default function SegmenterRow({ kind, title, segmenters, onQuantityChange, onReorder, onManageLabels }) {
@@ -22,7 +22,7 @@ export default function SegmenterRow({ kind, title, segmenters, onQuantityChange
         <span className="segmenter-tab active">{title}</span>
       </div>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={segmenters.map((s) => s.label_id)} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={segmenters.map((s) => s.label_id)} strategy={rectSortingStrategy}>
           <div className="segmenter-row">
             {segmenters.map((s) => (
               <SegmenterChip
