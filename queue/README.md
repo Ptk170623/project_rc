@@ -81,18 +81,20 @@ Every album also carries an **importance** level, picked from the small
 badge/dropdown on its card: **New**, **Important**, **Normal**, or **Less**.
 It feeds straight into the ranking formula above as a flat bonus (see
 `IMPORTANCE_WEIGHT_DAYS` in `src/priority.js`) — **New** gets a head start
-worth 20 "virtual days" of not having listened, **Important** gets 10,
+worth 40 "virtual days" of not having listened, **Important** gets 10,
 **Normal** is neutral, **Less** is a −15 penalty.
 
 This is a *boost*, not a guarantee: it's added on top of the real
 days-since-last-listened, not multiplied into it, so a long-neglected
 **Important** or **Normal** album can still outrank a **New** one. Example:
-album A is **New** and you listened to it 2 days ago (score 2 + 20 = 22);
-album B is **Important** and you haven't touched it in 95 days (score
-95 + 10 = 105) — B wins, as it should, since it's genuinely overdue. But
-against album C, **Normal** and only 10 days since its last listen (score
-10 + 0 = 10), A still wins (22 > 10) — the fresh **New** boost is enough to
-keep it ahead of something that isn't actually overdue yet.
+album A is **New** and you listened to it 2 days ago (score 2 + 40 = 42);
+album B is **Important** and you haven't touched it in 35 days (score
+35 + 10 = 45) — B just overtakes, since by then it's genuinely been
+waiting a while. Against album C, **Normal** and only 10 days since its
+last listen (score 10 + 0 = 10), A still wins easily (42 > 10) — the fresh
+**New** boost comfortably outlasts anything that isn't actually overdue
+yet; it only yields to something that's gone roughly a month or more
+without a listen.
 
 A newly-added album starts at **New** automatically, and graduates to
 **Normal** on its own once you've marked it listened 3 times (tune this via

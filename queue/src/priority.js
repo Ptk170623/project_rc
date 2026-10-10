@@ -27,7 +27,7 @@ export const IMPORTANCE_LEVELS = ["novo", "importante", "normal", "menos"];
 export const DEFAULT_IMPORTANCE = "novo";
 
 export const IMPORTANCE_WEIGHT_DAYS = {
-  novo: 20,
+  novo: 40,
   importante: 10,
   normal: 0,
   menos: -15,
