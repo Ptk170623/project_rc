@@ -50,10 +50,16 @@ export function importanceBonus(importance) {
   return IMPORTANCE_WEIGHT_DAYS[importance] ?? IMPORTANCE_WEIGHT_DAYS.normal;
 }
 
+// Never-listened albums all tie on daysSince (NEVER_LISTENED_DAYS), so the
+// position bonus — which can swing by the size of the whole list — would
+// swamp the much smaller importance gaps and become the real tiebreaker
+// instead of importance. So it only counts once there's an actual listen
+// to measure it against; among never-listened albums, importance alone
+// decides, and manual position still breaks ties within the same level.
 export function priorityScore(album, index, total, now = new Date()) {
   return (
     daysSince(album.last_listened_at, now) +
-    positionBonus(index, total) +
+    (album.last_listened_at ? positionBonus(index, total) : 0) +
     importanceBonus(album.importance)
   );
 }
