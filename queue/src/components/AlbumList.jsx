@@ -37,7 +37,6 @@ export default function AlbumList({
               key={album.id}
               album={album}
               specificLabel={labelsById.get(album.subgenre_id)?.label}
-              genericLabel={labelsById.get(album.subgenre_generic_id)?.label}
               onEdit={onEdit}
               onListen={onListen}
               onMoveTop={onMoveTop}

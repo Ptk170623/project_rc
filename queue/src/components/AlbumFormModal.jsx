@@ -5,7 +5,6 @@ import LabelSelect from "./LabelSelect.jsx";
 export default function AlbumFormModal({
   album,
   specificLabels,
-  genericLabels,
   bandNames,
   onClose,
   onSaved,
@@ -15,7 +14,6 @@ export default function AlbumFormModal({
   const [name, setName] = useState(album?.name || "");
   const [bandName, setBandName] = useState(album?.band_name || "");
   const [subgenreId, setSubgenreId] = useState(album?.subgenre_id ?? null);
-  const [genericId, setGenericId] = useState(album?.subgenre_generic_id ?? null);
   const [imageFile, setImageFile] = useState(undefined); // undefined = untouched
   const [imagePreview, setImagePreview] = useState(album?.imageUrl || null);
   const [removeImage, setRemoveImage] = useState(false);
@@ -45,7 +43,6 @@ export default function AlbumFormModal({
         name: trimmed,
         band_name: bandName.trim(),
         subgenre_id: subgenreId,
-        subgenre_generic_id: genericId,
       };
       if (imageFile) fields.image = imageFile;
       else if (removeImage) fields.image = null;
@@ -106,31 +103,17 @@ export default function AlbumFormModal({
             </datalist>
           </div>
 
-          <div className="form-field-row">
-            <div className="form-field">
-              <label htmlFor="album-subgenre">Subgenre</label>
-              <LabelSelect
-                id="album-subgenre"
-                kind="specific"
-                label="subgenre"
-                labels={specificLabels}
-                value={subgenreId}
-                onChange={setSubgenreId}
-                onLabelsChanged={onLabelsChanged}
-              />
-            </div>
-            <div className="form-field">
-              <label htmlFor="album-subgenre-generic">Generic subgenre</label>
-              <LabelSelect
-                id="album-subgenre-generic"
-                kind="generic"
-                label="generic subgenre"
-                labels={genericLabels}
-                value={genericId}
-                onChange={setGenericId}
-                onLabelsChanged={onLabelsChanged}
-              />
-            </div>
+          <div className="form-field">
+            <label htmlFor="album-subgenre">Subgenre</label>
+            <LabelSelect
+              id="album-subgenre"
+              kind="specific"
+              label="subgenre"
+              labels={specificLabels}
+              value={subgenreId}
+              onChange={setSubgenreId}
+              onLabelsChanged={onLabelsChanged}
+            />
           </div>
 
           <div className="form-field">

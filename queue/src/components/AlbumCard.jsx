@@ -17,7 +17,6 @@ function formatLastListened(iso) {
 export default function AlbumCard({
   album,
   specificLabel,
-  genericLabel,
   onEdit,
   onListen,
   onMoveTop,
@@ -51,10 +50,9 @@ export default function AlbumCard({
       <div className="album-info" onClick={() => onEdit(album)}>
         <span className="album-band">{album.band_name || "Unknown band"}</span>
         <span className="album-name">{album.name}</span>
-        {(specificLabel || genericLabel) && (
+        {specificLabel && (
           <div className="album-tags">
-            {specificLabel && <span className="album-tag">{specificLabel}</span>}
-            {genericLabel && <span className="album-tag generic">{genericLabel}</span>}
+            <span className="album-tag">{specificLabel}</span>
           </div>
         )}
         <div className="album-meta-row">

@@ -156,43 +156,16 @@ textarea:focus {
   padding: 10px 14px;
   border-radius: 999px;
 }
-.subgenre-filter {
-  flex: 1;
-  min-width: 140px;
-  border-radius: 999px;
-  padding: 10px 14px;
-}
 
-/* Segmenter bar */
-.segmenter-tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-.segmenter-tab {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-muted);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  cursor: pointer;
-  font-family: inherit;
-}
-.segmenter-tab.active {
-  background: var(--surface-2);
-  color: var(--text);
-  border-color: var(--accent);
-}
-
-.segmenter-row {
+/* Subgenre bar: view-only filter chips, each showing how many albums
+   carry that tag. Wraps to multiple rows rather than scrolling sideways. */
+.subgenre-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 14px;
 }
-
-.segmenter-chip {
+.subgenre-chip {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -200,49 +173,24 @@ textarea:focus {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 6px 6px 6px 14px;
+  padding: 6px 14px;
   font-size: 13px;
   color: var(--text-muted);
-  touch-action: pan-x;
+  cursor: pointer;
+  font-family: inherit;
 }
-.segmenter-chip.active {
+.subgenre-chip.active {
   background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
   border-color: var(--accent);
   color: var(--text);
 }
-.segmenter-chip-label {
-  white-space: nowrap;
-  cursor: grab;
-}
-.segmenter-chip-qty {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.segmenter-chip-qty button {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 13px;
+.subgenre-chip-count {
+  font-size: 11px;
   font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: inherit;
-  touch-action: manipulation;
+  color: var(--text-dim);
 }
-.segmenter-chip.active .segmenter-chip-qty button {
-  border-color: var(--accent);
-}
-.segmenter-chip-qty-value {
-  min-width: 16px;
-  text-align: center;
-  font-weight: 700;
-  color: var(--text);
+.subgenre-chip.active .subgenre-chip-count {
+  color: var(--text-muted);
 }
 .segmenter-manage-btn {
   flex-shrink: 0;
@@ -353,9 +301,6 @@ textarea:focus {
   border: 1px solid var(--border);
   color: var(--text-muted);
   white-space: nowrap;
-}
-.album-tag.generic {
-  border-style: dashed;
 }
 .album-listened {
   font-size: 10px;

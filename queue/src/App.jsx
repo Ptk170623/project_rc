@@ -3,8 +3,7 @@ import { api } from "./api.js";
 import InstallButton from "./components/InstallButton.jsx";
 import ExportImportMenu from "./components/ExportImportMenu.jsx";
 import SearchBar from "./components/SearchBar.jsx";
-import SubgenreFilter from "./components/SubgenreFilter.jsx";
-import SegmenterRow from "./components/SegmenterRow.jsx";
+import SubgenreBar from "./components/SubgenreBar.jsx";
 import AlbumList from "./components/AlbumList.jsx";
 import AlbumFormModal from "./components/AlbumFormModal.jsx";
 import LabelManagerModal from "./components/LabelManagerModal.jsx";
@@ -12,27 +11,21 @@ import LabelManagerModal from "./components/LabelManagerModal.jsx";
 export default function App() {
   const [albums, setAlbums] = useState([]);
   const [specificLabels, setSpecificLabels] = useState([]);
-  const [genericLabels, setGenericLabels] = useState([]);
-  const [specificSegmenters, setSpecificSegmenters] = useState([]);
-  const [genericSegmenters, setGenericSegmenters] = useState([]);
   const [bandNames, setBandNames] = useState([]);
   const [search, setSearch] = useState("");
-  const [subgenreFilter, setSubgenreFilter] = useState(null); // "specific-<id>" | "generic-<id>" | null
+  const [subgenreFilter, setSubgenreFilter] = useState(null); // label id or null
   const [loading, setLoading] = useState(true);
 
   const [showAddAlbum, setShowAddAlbum] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState(null);
-  const [manageLabelsKind, setManageLabelsKind] = useState(null);
+  const [showLabelManager, setShowLabelManager] = useState(false);
 
   const imageUrlsRef = useRef([]);
 
   const load = async () => {
-    const [rawAlbums, specific, generic, segSpecific, segGeneric, bands] = await Promise.all([
+    const [rawAlbums, specific, bands] = await Promise.all([
       api.listAlbums(),
-      api.listLabels("specific"),
-      api.listLabels("generic"),
-      api.listSegmenters("specific"),
-      api.listSegmenters("generic"),
+      api.listLabelsWithCounts("specific"),
       api.listBandNames(),
     ]);
 
@@ -47,9 +40,6 @@ export default function App() {
 
     setAlbums(withImages);
     setSpecificLabels(specific);
-    setGenericLabels(generic);
-    setSpecificSegmenters(segSpecific);
-    setGenericSegmenters(segGeneric);
     setBandNames(bands);
     setLoading(false);
   };
@@ -61,9 +51,9 @@ export default function App() {
 
   const labelsById = useMemo(() => {
     const map = new Map();
-    for (const l of [...specificLabels, ...genericLabels]) map.set(l.id, l);
+    for (const l of specificLabels) map.set(l.id, l);
     return map;
-  }, [specificLabels, genericLabels]);
+  }, [specificLabels]);
 
   const visibleAlbums = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -73,11 +63,8 @@ export default function App() {
         (a) => a.name.toLowerCase().includes(q) || (a.band_name || "").toLowerCase().includes(q)
       );
     }
-    if (subgenreFilter) {
-      const [kind, idStr] = subgenreFilter.split("-");
-      const id = Number(idStr);
-      const field = kind === "specific" ? "subgenre_id" : "subgenre_generic_id";
-      result = result.filter((a) => a[field] === id);
+    if (subgenreFilter != null) {
+      result = result.filter((a) => a.subgenre_id === subgenreFilter);
     }
     return result;
   }, [albums, search, subgenreFilter]);
@@ -101,18 +88,8 @@ export default function App() {
     load();
   };
 
-  const handleSegmenterQuantity = async (labelId, kind, qty) => {
-    await api.setSegmenterQuantity(labelId, kind, qty);
-    load();
-  };
-
   const handleImportanceChange = async (id, importance) => {
     await api.setImportance(id, importance);
-    load();
-  };
-
-  const handleSegmenterReorder = async (kind, orderedLabelIds) => {
-    await api.reorderSegmenters(kind, orderedLabelIds);
     load();
   };
 
@@ -134,29 +111,13 @@ export default function App() {
       <main className="content">
         <div className="search-filter-row">
           <SearchBar value={search} onChange={setSearch} />
-          <SubgenreFilter
-            specificLabels={specificLabels}
-            genericLabels={genericLabels}
-            value={subgenreFilter}
-            onChange={setSubgenreFilter}
-          />
         </div>
 
-        <SegmenterRow
-          kind="specific"
-          title="Subgenre"
-          segmenters={specificSegmenters}
-          onQuantityChange={handleSegmenterQuantity}
-          onReorder={handleSegmenterReorder}
-          onManageLabels={setManageLabelsKind}
-        />
-        <SegmenterRow
-          kind="generic"
-          title="Generic subgenre"
-          segmenters={genericSegmenters}
-          onQuantityChange={handleSegmenterQuantity}
-          onReorder={handleSegmenterReorder}
-          onManageLabels={setManageLabelsKind}
+        <SubgenreBar
+          labels={specificLabels}
+          value={subgenreFilter}
+          onChange={setSubgenreFilter}
+          onManageLabels={() => setShowLabelManager(true)}
         />
 
         <AlbumList
@@ -174,7 +135,6 @@ export default function App() {
         <AlbumFormModal
           album={editingAlbum}
           specificLabels={specificLabels}
-          genericLabels={genericLabels}
           bandNames={bandNames}
           onClose={() => {
             setShowAddAlbum(false);
@@ -185,11 +145,11 @@ export default function App() {
         />
       )}
 
-      {manageLabelsKind && (
+      {showLabelManager && (
         <LabelManagerModal
-          kind={manageLabelsKind}
-          title={manageLabelsKind === "specific" ? "Subgenres" : "Generic subgenres"}
-          onClose={() => setManageLabelsKind(null)}
+          kind="specific"
+          title="Subgenres"
+          onClose={() => setShowLabelManager(false)}
           onChanged={load}
         />
       )}
