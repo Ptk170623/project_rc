@@ -12,12 +12,14 @@
 // POSITION_WEIGHT_DAYS and IMPORTANCE_WEIGHT_DAYS are the constants to
 // retune if the balance doesn't feel right — both read as "worth N days of
 // not having listened." Position: raise it to let manual ordering dominate
-// more; lower it (towards 0) to let recency dominate instead. Importance:
-// "novo" is deliberately huge, so a new album keeps winning its subgenre's
-// pick almost regardless of recency until it's graduated out of "novo"
-// (see IMPORTANCE_GRADUATION_LISTENS in api.js) or you reclassify it
-// yourself; "menos" is negative, so it still surfaces eventually but only
-// once everything else in its subgenre has had a turn.
+// more; lower it (towards 0) to let recency dominate instead. Importance is
+// a BOOST, not an override: "novo" gives a new album a meaningful head
+// start (worth NOVO_WEIGHT days of "virtual" waiting) so it comfortably
+// beats anything with a similar or shorter real gap, but a "normal" or
+// "importante" album that's genuinely been neglected for longer than that
+// still wins on raw days-since-listened — the boost gets added to, not
+// multiplied into, the real wait. "menos" is negative, so it still surfaces
+// eventually but only once everything else in its subgenre has had a turn.
 export const NEVER_LISTENED_DAYS = 36500; // ~100 years: always ranks first
 export const POSITION_WEIGHT_DAYS = 1;
 
@@ -25,10 +27,10 @@ export const IMPORTANCE_LEVELS = ["novo", "importante", "normal", "menos"];
 export const DEFAULT_IMPORTANCE = "novo";
 
 export const IMPORTANCE_WEIGHT_DAYS = {
-  novo: 365,
-  importante: 60,
+  novo: 20,
+  importante: 10,
   normal: 0,
-  menos: -30,
+  menos: -15,
 };
 
 export function daysSince(isoDate, now = new Date()) {
