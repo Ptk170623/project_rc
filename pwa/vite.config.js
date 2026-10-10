@@ -45,6 +45,13 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
+        // This app's service worker scope ("/project_rc/") covers the
+        // whole site, including the separate Listening Queue app nested
+        // under /queue/ — without this, workbox's SPA navigation fallback
+        // would intercept a first visit to /queue/ (before that app's own,
+        // more specific service worker ever gets a chance to register) and
+        // wrongly serve *this* app's shell instead.
+        navigateFallbackDenylist: [/\/queue(\/|$)/],
       },
     }),
   ],
